@@ -108,7 +108,7 @@ def _test():
     (opts, args) = parser.parse_args()
 
     fastqc.set_options(opts, args)
-    print fastqc.run_fastqc()
+    fastqc.run_fastqc()
     
 if __name__ == "__main__":
     main()
