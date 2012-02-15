@@ -10,7 +10,7 @@ import os
 logger = logging.getLogger("FastQC Logging")
 # logger.setLevel(logging.DEBUG)
 
-from CCR_NGS import utils
+from ccrngspy import utils
 
 class Task(object):
     def optparse(self, parser):
