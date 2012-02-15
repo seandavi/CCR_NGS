@@ -4,13 +4,11 @@ Kenny Daily, 2012
 
 """
 import optparse
-import logging
 import os
 
-logger = logging.getLogger("FastQC Logging")
-# logger.setLevel(logging.DEBUG)
-
 from ccrngspy import utils
+
+logger = utils.make_local_logger("FastQC logging", level="debug", color="green")
 
 class Task(object):
     def optparse(self, parser):
@@ -40,6 +38,7 @@ class FastQC(Task):
                        casava="--casava")
     
     def __init__(self, input_files=None, output_directory=None):
+        
         self.input_files = input_files
         self.output_directory = output_directory
 
@@ -49,8 +48,8 @@ class FastQC(Task):
         """
 
         group = optparse.OptionGroup(parser, "FastQC Options")
-        group.add_option("-o", "--outdir", dest="output_directory", type="string", default="",
-                          help="FastQC output directory.")
+        group.add_option("-o", "--outdir", dest="output_directory", type="string",
+                         help="FastQC output directory.")
         group.add_option("--casava", dest="casava", action="store_true", default=False,
                          help="Files come from raw casava output.")
         group.add_option("-t", "--threads", dest="threads", type="int", default=1,
@@ -63,8 +62,7 @@ class FastQC(Task):
 
         """
 
-        self.input_files = args
-        self.output_directory = opts.output_directory
+        self.__init__(input_files=args, output_directory=opts.output_directory)
         self.threads = opts.threads
         self.casava = opts.casava
 
@@ -89,7 +87,10 @@ class FastQC(Task):
         
         """
 
-        cmd = " ".join([self._cmd, self.make_option_string(), " ".join(self.input_files)])
+        if self.input_files:
+            cmd = " ".join([self._cmd, self.make_option_string(), " ".join(self.input_files)])
+        else:
+            raise ValueError("Did not specify any input files!")
         
         logger.debug("Command to run: %s" % (cmd, ))
         utils.safe_run(cmd)
@@ -108,6 +109,7 @@ def _test():
     (opts, args) = parser.parse_args()
 
     fastqc.set_options(opts, args)
+    
     fastqc.run_fastqc()
     
 if __name__ == "__main__":
