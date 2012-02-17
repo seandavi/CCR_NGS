@@ -4,6 +4,7 @@ import logging
 
 def safe_run(cmd, shell=False):
     res = None
+
     if (isinstance(cmd, list)):
         res = subprocess.call(cmd)
     else:
