@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import csv
 import sys
 import os
 import argparse
@@ -17,26 +18,32 @@ parser = argparse.ArgumentParser(description="Run fastqc on files.")
 parser.add_argument("--print_only", dest="print_only", action="store_true", default=False,
                     help="Don't run the pipeline, just print what will be run.")
 
-# parser.add_argument('config',
-#                     help="A YAML configuration file for pipeline.")
+parser.add_argument('--config_file', dest="config_file", type=str,
+                    help="A YAML configuration file for pipeline.")
+
+parser.add_argument('--sample_file', dest="sample_file", type=str,
+                    help="A YAML configuration file for pipeline.")
 
 ## add options for the fastqc task
 parser = fastqc_task.argparse(parser)
 
-tmp_args = "-o /tmp/"
+## Parse the options
 opts = parser.parse_args()
 
-print opts
+## Load the bootstrap config file
+with open(opts.config_file, 'r') as configfile:
+    config = yaml.load(configfile)
 
-# with open(opts.config,'r') as configfile:
-#     config = yaml.load(configfile)
+with open(opts.sample_file, 'r') as samplefile:
+    reader = csv.DictReader(samplefile, delimiter="\t")
+    samples = list(reader)
 
 #----------------------------------------------
 # begin tasks here
 #----------------------------------------------
 
-def make_fastqc_param_list(file_list):
-    """Helper function to turn a file list into a list for ruffus.
+def make_fastqc_param_list(samples):
+    """Helper function to turn the sample file into a list of files.
 
     Needs to be a list of [input, output, params]; for the fastqc,
     the output is none, while the params are taken from the global opts variable
@@ -44,12 +51,9 @@ def make_fastqc_param_list(file_list):
     
     """
     
-    return map(lambda x: [x, None, None], file_list)
+    return map(lambda x: [x['filename'], None, None], samples)
 
-file_list = ["/var/preserve/git/CCR_NGS/example_data/fastq/s_1_1.fastq.gz",
-             "/var/preserve/git/CCR_NGS/example_data/fastq/s_1_2.fastq.gz"]
-
-test_task_params = make_fastqc_param_list(file_list)
+test_task_params = make_fastqc_param_list(samples)
 
 @files(test_task_params)
 def run_fastqc(input, output, params=None):
@@ -57,26 +61,12 @@ def run_fastqc(input, output, params=None):
     
     """
 
-    fastqc_task = FastQC.FastQC(input_files=[input], output_directory=opts.output_directory)
-
-    cmd = fastqc_task.make_command()
-
-    subprocess.call(cmd, shell=True)
-    # fastqc_task.run_fastqc()
+    fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
+    fastqc_task.run_fastqc()
 
 
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_fastqc])
 else:
-    pipeline_run([run_fastqc])
+    pipeline_run([run_fastqc], multiprocess=5)
 
-# def sam2pindel(input,output):
-#     print input,output
-#     params = {'samtools':config['samtools'],
-#               'bamfile':opts.filename,
-#               'sam2pindel':config['sam2pindel'],
-#               'outfile':str(output),
-#               'insertsize':opts.insertsize,
-#               'tag':opts.tag}
-#     cmd = "%(samtools)s view %(bamfile)s | %(sam2pindel)s - %(outfile)s %(insertsize)d %(tag)s 0" % params
-#     subprocess.call(cmd,shell=True)
