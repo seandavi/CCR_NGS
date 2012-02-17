@@ -407,7 +407,7 @@ def setup_and_cleanup(fxn):
     def wrapper(args):
 
         (pic, args, cl) = setup(args)
-        args.stdouts, args.rval = fxn(args, pic, cl)
+        args = fxn(args, pic, cl)
         cleanup(args, pic)
 
     return wrapper
@@ -448,36 +448,48 @@ def mark_duplicates(args, pic, cl):
     cl.append('READ_NAME_REGEX="%s"' % args.readregex)
     # maximum offset between two duplicate clusters
     cl.append('OPTICAL_DUPLICATE_PIXEL_DISTANCE=%s' % args.optdupdist)
-    stdouts, rval = pic.runPic(args.jar, cl)
-    return stdouts, rval
+    args.stdouts, args.rval = pic.runPic(args.jar, cl)
+    return args
 
     # cleanup(args, pic, rval, stdouts)
 
-# @setup_and_cleanup
-# def create_sequence_dictionary(args):
-#     pass
-    # if pic.picname == "CreateSequenceDictionary":
-    #     csd = 'CreateSequenceDictionary'
-    #     realjarpath = os.path.split(args.jar)[0]
-    #     jarpath = os.path.join(realjarpath,'%s.jar' % csd) # for refseq
-    #     tmp_ref_fd, tmp_ref_name = tempfile.mkstemp(dir=args.tmpdir , prefix = pic.picname)
-    #     args.ref = '%s.fasta' % tmp_ref_name
-    #     # build dict
-    #     dict_file_name = '%s.dict' % tmp_ref_name
-    #     os.symlink(args.ref_file, args.ref)
-    #     cl = ['REFERENCE=%s' % args.ref]
-    #     cl.append('OUTPUT=%s' % dict_file_name)
-    #     cl.append('URI=%s' % os.path.basename(args.ref_file))
-    #     cl.append('TRUNCATE_NAMES_AT_WHITESPACE=%s' % args.trunc_names)
-    #     if args.species_name:
-    #         cl.append('SPECIES=%s' % args.species_name)
-    #     if args.build_name:
-    #         cl.append('GENOME_ASSEMBLY=%s' % args.build_name)
-    #     pic.delme.append(dict_file_name)
-    #     pic.delme.append(args.ref)
-    #     pic.delme.append(tmp_ref_name)
-    #     stdouts,rval = pic.runPic(jarpath, cl)
-    #     # run relevant command(s)
+@setup_and_cleanup
+def create_sequence_dictionary(args, pic, cl):
+
+    assert args.ref_file, "Did not specify a ref file"
+    assert args.ref, "Did not specify ref"
+
+    csd = 'CreateSequenceDictionary'
+    realjarpath = os.path.split(args.jar)[0]
+    jarpath = os.path.join(realjarpath,'%s.jar' % csd) # for refseq
+
+    tmp_ref_fd, tmp_ref_name = tempfile.mkstemp(dir=args.tmpdir , prefix = pic.picname)
+    args.ref = '%s.fasta' % tmp_ref_name
+
+    # build dict
+    dict_file_name = '%s.dict' % tmp_ref_name
+    os.symlink(args.ref_file, args.ref)
+
+    cl = ['REFERENCE=%s' % args.ref]
+    cl.append('OUTPUT=%s' % dict_file_name)
+    cl.append('URI=%s' % os.path.basename(args.ref_file))
+    cl.append('TRUNCATE_NAMES_AT_WHITESPACE=%s' % args.trunc_names)
+
+    if args.species_name:
+        cl.append('SPECIES=%s' % args.species_name)
+
+    if args.build_name:
+        cl.append('GENOME_ASSEMBLY=%s' % args.build_name)
+
+    pic.delme.append(dict_file_name)
+    pic.delme.append(args.ref)
+    pic.delme.append(tmp_ref_name)
+
+    stdouts,rval = pic.runPic(jarpath, cl)
+
+    return stdouts, rval
+
+    # run relevant command(s)
 
 def __main__():
 
@@ -512,13 +524,14 @@ def __main__():
     # Need subparsers for the various commands
     subparsers = parser.add_subparsers(help="Picard sub-command help", dest='subparser_name')
 
-    # # CreateSequenceDictionary
-    # createseqdictparser = subparsers.add_parser("CreateSequenceDictionary", help="CreateSequenceDictionary help")
-    # createseqdictparser.add_argument('--ref-file', dest='ref_file', help='Fasta to use as reference', default=None)
-    # createseqdictparser.add_argument('--species-name', dest='species_name', help='Species name to use in creating dict file from fasta file')
-    # createseqdictparser.add_argument('--build-name', dest='build_name', help='Name of genome assembly to use in creating dict file from fasta file')
-    # createseqdictparser.add_argument('--trunc-names', dest='trunc_names', help='Truncate sequence names at first whitespace from fasta file')
-
+    # CreateSequenceDictionary
+    createseqdictparser = subparsers.add_parser("CreateSequenceDictionary", help="CreateSequenceDictionary help")
+    createseqdictparser.add_argument('--ref-file', dest='ref_file', help='Fasta to use as reference', default=None)
+    createseqdictparser.add_argument('--species-name', dest='species_name', help='Species name to use in creating dict file from fasta file')
+    createseqdictparser.add_argument('--build-name', dest='build_name', help='Name of genome assembly to use in creating dict file from fasta file')
+    createseqdictparser.add_argument('--trunc-names', dest='trunc_names', help='Truncate sequence names at first whitespace from fasta file')
+    createseqdictparser.set_defaults(func=create_sequence_dictionary)
+    
     # MarkDuplicates
     markdupparser = subparsers.add_parser("MarkDuplicates", help="MarkDuplicates help")
     markdupparser.add_argument('--remdups', default='true', help='Remove duplicates from output file')
