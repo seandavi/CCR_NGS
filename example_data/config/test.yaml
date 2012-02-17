@@ -1,0 +1,2 @@
+fastqc_params: {output_dir: /tmp/}
+
