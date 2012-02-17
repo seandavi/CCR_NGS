@@ -19,8 +19,6 @@ import yaml
 
 from ccrngspy.tasks import FastQC
 
-fastqc_task = FastQC.FastQC()
-
 parser = argparse.ArgumentParser(description="Run fastqc on files.")
 
 parser.add_argument("--print_only", dest="print_only", action="store_true", default=False,
@@ -33,7 +31,7 @@ parser.add_argument('--sample_file', dest="sample_file", type=str,
                     help="A YAML configuration file for pipeline.")
 
 # add options for the fastqc task
-parser = fastqc_task.argparse(parser)
+parser = FastQC.FastQC().argparse(parser)
 
 # Parse the options
 opts = parser.parse_args()
