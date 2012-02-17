@@ -40,10 +40,7 @@ def make_local_logger(logger_name, level="info", color=False):
     except KeyError:
         logger.setLevel(level)
     
-    if color:
-        format = "%(asctime)s - %(name)s - " + _LOGGING_COLOR[color] + "%(levelname)s:%(module)s.%(funcName)s\033[0m-%(message)s"
-    else:
-        format = "%(levelname)s:%(module)s.%(funcName)s::%(message)s"
+    format = "%(asctime)s - %(name)s - " + _LOGGING_COLOR[color] + "%(levelname)s:%(module)s.%(funcName)s\033[0m - %(message)s"
         
     formatter = logging.Formatter(format)
 
