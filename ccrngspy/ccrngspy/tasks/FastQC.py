@@ -37,7 +37,7 @@ class FastQC(Task.Task):
         """
 
         group = parser.add_argument_group("FastQC Options")
-        group.add_argument("-o", "--outdir", dest="output_directory", type=str,
+        group.add_argument("-o", "--outdir", dest="output_directory", type=str, default=None,
                            help="FastQC output directory.")
         group.add_argument("--casava", dest="casava", action="store_true", default=False,
                            help="Files come from raw casava output.")
