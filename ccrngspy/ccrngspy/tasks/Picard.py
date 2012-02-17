@@ -7,7 +7,8 @@ usage: picard_wrapper.py [options]
 code Ross wrote licensed under the LGPL
 see http://www.gnu.org/copyleft/lesser.html
 
-Removed the code to run this as a galaxy tool, kept PicardBase.
+Re-working of the code by Kenny Daily, Feb. 2012
+Converted to using argparse and sub-parsers, have kept PicardBase intact so far.
 
 """
 
