@@ -1,2 +1,2 @@
 fastqc_params: {output_dir: /tmp/}
-
+picard_params: {}
