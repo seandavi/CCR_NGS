@@ -59,40 +59,43 @@ class PicardBase():
     lots of changes...
     """
     
-    def __init__(self, opts, arg0=None):
+    def __init__(self, opts=None, arg0=None):
         """ common stuff needed at init for a picard tool
         """
 
-        self.opts = opts
+        # Only if opts is passed in do we want to set up
+        # Without opts, we can use the argparse(...) method to set up the necessary arguments
+        if opts:
+            self.opts = opts
 
-        if self.opts.outdir == None:
-             self.opts.outdir = os.getcwd() # fixmate has no html file eg so use temp dir
-        assert self.opts.outdir <> None,'## PicardBase needs a temp directory if no output directory passed in'
+            if self.opts.outdir == None:
+                self.opts.outdir = os.getcwd() # fixmate has no html file eg so use temp dir
+            assert self.opts.outdir <> None,'## PicardBase needs a temp directory if no output directory passed in'
 
-        self.picname = self.baseName(opts.jar)
-        self.picname = self.baseName(opts.jar)
+            self.picname = self.baseName(opts.jar)
+            self.picname = self.baseName(opts.jar)
 
-        if self.picname.startswith('picard'):
-            self.picname = opts.picard_cmd # special case for some tools like replaceheader?
+            if self.picname.startswith('picard'):
+                self.picname = opts.picard_cmd # special case for some tools like replaceheader?
 
-        self.progname = self.baseName(arg0)
-        self.version = '0.002'
-        self.delme = [] # list of files to destroy
-        self.title = opts.title
-        self.inputfile = opts.input
-        try:
-            os.makedirs(opts.outdir)
-        except:
-            pass
-        try:
-            os.makedirs(opts.tmpdir)
-        except:
-            pass
-        self.log_filename = os.path.join(self.opts.outdir,'%s.log' % self.picname)
-        self.metricsOut =  os.path.join(opts.outdir,'%s.metrics.txt' % self.picname)
+            self.progname = self.baseName(arg0)
+            self.version = '0.002'
+            self.delme = [] # list of files to destroy
+            self.title = opts.title
+            self.inputfile = opts.input
+            try:
+                os.makedirs(opts.outdir)
+            except:
+                pass
+            try:
+                os.makedirs(opts.tmpdir)
+            except:
+                pass
+            self.log_filename = os.path.join(self.opts.outdir,'%s.log' % self.picname)
+            self.metricsOut =  os.path.join(opts.outdir,'%s.metrics.txt' % self.picname)
 
-        # removed to use our logging code - logger is set at the module level
-        # self.setLogging(logfname=self.log_filename)
+            # removed to use our logging code - logger is set at the module level
+            # self.setLogging(logfname=self.log_filename)
  
     def baseName(self,name=None):
         return os.path.splitext(os.path.basename(name))[0]
@@ -128,7 +131,7 @@ class PicardBase():
             stop_err('Read Large Exception : %s' % str(e))   
         return s
     
-    def runCL(self,cl=None,output_dir=None):
+    def runCL(self, cl=None, output_dir=None):
         """ construct and run a command line
         we have galaxy's temp path as opt.temp_dir so don't really need isolation
         sometimes stdout is needed as the output - ugly hacks to deal with potentially vast artifacts
@@ -382,6 +385,59 @@ class PicardBase():
                 shutil.copy(insam,newsam)
         logging.info(info)
 
+    def argparse(self, parser):
+        # All tools
+        parser.add_argument('-i', '--input', dest='input', help='Input SAM or BAM file', type=str)
+        parser.add_argument('-e', '--inputext', default=None, type=str)
+        parser.add_argument('-o', '--output', default=None, type=str)
+        parser.add_argument('-n', '--title', default="Pick a Picard Tool", type=str)
+        parser.add_argument('-t', '--htmlout', default=None)
+        parser.add_argument('-d', '--outdir', default=None)
+        parser.add_argument('-x', '--maxjheap', default='4g')
+        parser.add_argument('-b', '--bisulphite', default='false')
+        parser.add_argument('-s', '--sortorder', default='query')     
+        parser.add_argument('--tmpdir', default='/tmp')
+        parser.add_argument('-j', '--jar', default='')    
+        # parser.add_argument('--picard-cmd', default=None)
+
+        # Many tools
+        parser.add_argument('--output-format', dest='output_format', help='Output format')
+        parser.add_argument('--bai-file', dest='bai_file', help='The path to the index file for the input bam file')
+        parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
+        parser.add_argument('--assumesorted', default='True')
+        parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
+        parser.add_argument('--ref_file', dest='ref_file', help='Fasta to use as reference', default=None)
+
+        # Need subparsers for the various commands
+        subparsers = parser.add_subparsers(help="Picard sub-command help", dest='subparser_name')
+
+        # # CreateSequenceDictionary
+        # createseqdictparser = subparsers.add_parser("CreateSequenceDictionary", help="CreateSequenceDictionary help")
+        # createseqdictparser.add_argument('--species-name', dest='species_name', help='Species name to use in creating dict file from fasta file')
+        # createseqdictparser.add_argument('--build-name', dest='build_name', help='Name of genome assembly to use in creating dict file from fasta file')
+        # createseqdictparser.add_argument('--trunc-names', dest='trunc_names', help='Truncate sequence names at first whitespace from fasta file')
+        # createseqdictparser.set_defaults(func=create_sequence_dictionary)
+
+        # MarkDuplicates
+        markdupparser = subparsers.add_parser("MarkDuplicates", help="MarkDuplicates help")
+        markdupparser.add_argument('--remdups', default='true', help='Remove duplicates from output file')
+        markdupparser.add_argument('--optdupdist', default="100", help='Maximum pixels between two identical sequences in order to consider them optical duplicates.')
+        markdupparser.set_defaults(func=mark_duplicates)
+
+        # CollectRnaSeqMetrics
+        collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
+        collectrnaseqmetricsparser.add_argument('--ribosomal_intervals', help='Location of ribosomal sequences in genome.', default=None)
+        collectrnaseqmetricsparser.add_argument('--minimum_length', type=int, help='Minimum length [default: %(default)s]', default=500)
+        collectrnaseqmetricsparser.add_argument('--chart_output', help='Output of PDF file', default=None)
+        collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None)
+        collectrnaseqmetricsparser.add_argument('--rrna_fragment_precentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
+        collectrnaseqmetricsparser.add_argument('--metric_accumulation_level', type=str, help='The level(s) at which to accumulate metrics. [default: %(default)s]',
+                                                choices=["ALL_READS", "SAMPLE", "LIBRARY", "READ_GROUP"], default="SAMPLE")
+        collectrnaseqmetricsparser.add_argument('--stop_after', type=int, help='Stop after N reads [default: %(default)s]', default=0)
+        collectrnaseqmetricsparser.set_defaults(func=collect_rnaseq_metrics)
+
+        return parser
+
 def setup(args):
     """Do things that all functions may require.
     
@@ -539,7 +595,15 @@ def collect_rnaseq_metrics(args, pic, cl):
     args.stdouts, args.rval = pic.runPic(args.jar, cl)
     return args
 
-    
+
+    def set_options(self, args):
+        """Use args from argparse.parse_args to populate the class.
+
+        """
+
+        self.__init__(opts=args)
+
+        
     
 def __main__():
 
@@ -547,58 +611,11 @@ def __main__():
     doTranspose = True # default
     maxloglines = 100 # default 
 
-    #Parse Command Line
     parser = argparse.ArgumentParser()
 
-    # All tools
-    parser.add_argument('-i', '--input', dest='input', help='Input SAM or BAM file', type=str)
-    parser.add_argument('-e', '--inputext', default=None, type=str)
-    parser.add_argument('-o', '--output', default=None, type=str)
-    parser.add_argument('-n', '--title', default="Pick a Picard Tool", type=str)
-    parser.add_argument('-t', '--htmlout', default=None)
-    parser.add_argument('-d', '--outdir', default=None)
-    parser.add_argument('-x', '--maxjheap', default='4g')
-    parser.add_argument('-b', '--bisulphite', default='false')
-    parser.add_argument('-s', '--sortorder', default='query')     
-    parser.add_argument('--tmpdir', default='/tmp')
-    parser.add_argument('-j', '--jar', default='')    
-    # parser.add_argument('--picard-cmd', default=None)
-
-    # Many tools
-    parser.add_argument('--output-format', dest='output_format', help='Output format')
-    parser.add_argument('--bai-file', dest='bai_file', help='The path to the index file for the input bam file')
-    parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
-    parser.add_argument('--assumesorted', default='True')
-    parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
-    parser.add_argument('--ref-file', dest='ref_file', help='Fasta to use as reference', default=None)
-
-    # Need subparsers for the various commands
-    subparsers = parser.add_subparsers(help="Picard sub-command help", dest='subparser_name')
-
-    # # CreateSequenceDictionary
-    # createseqdictparser = subparsers.add_parser("CreateSequenceDictionary", help="CreateSequenceDictionary help")
-    # createseqdictparser.add_argument('--species-name', dest='species_name', help='Species name to use in creating dict file from fasta file')
-    # createseqdictparser.add_argument('--build-name', dest='build_name', help='Name of genome assembly to use in creating dict file from fasta file')
-    # createseqdictparser.add_argument('--trunc-names', dest='trunc_names', help='Truncate sequence names at first whitespace from fasta file')
-    # createseqdictparser.set_defaults(func=create_sequence_dictionary)
-    
-    # MarkDuplicates
-    markdupparser = subparsers.add_parser("MarkDuplicates", help="MarkDuplicates help")
-    markdupparser.add_argument('--remdups', default='true', help='Remove duplicates from output file')
-    markdupparser.add_argument('--optdupdist', default="100", help='Maximum pixels between two identical sequences in order to consider them optical duplicates.')
-    markdupparser.set_defaults(func=mark_duplicates)
-
-    # CollectRnaSeqMetrics
-    collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
-    collectrnaseqmetricsparser.add_argument('--ribosomal_intervals', help='Location of ribosomal sequences in genome.', default=None)
-    collectrnaseqmetricsparser.add_argument('--minimum_length', type=int, help='Minimum length [default: %(default)s]', default=500)
-    collectrnaseqmetricsparser.add_argument('--chart_output', help='Output of PDF file', default=None)
-    collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None)
-    collectrnaseqmetricsparser.add_argument('--rrna_fragment_precentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
-    collectrnaseqmetricsparser.add_argument('--metric_accumulation_level', type=str, help='The level(s) at which to accumulate metrics. [default: %(default)s]',
-                                            choices=["ALL_READS", "SAMPLE", "LIBRARY", "READ_GROUP"], default="SAMPLE")
-    collectrnaseqmetricsparser.add_argument('--stop_after', type=int, help='Stop after N reads [default: %(default)s]', default=0)
-    collectrnaseqmetricsparser.set_defaults(func=collect_rnaseq_metrics)
+    # Add Picard arguments
+    picard = PicardBase()
+    parser = picard.argparse(parser)
 
     args = parser.parse_args()
     args.func(args)
