@@ -1,2 +1,10 @@
 fastqc_params: {output_dir: /tmp/}
-picard_params: {}
+picard_params: {ribosomal_intervals: 
+		minimum_length: 500
+		chart_output: 
+		rrna_fragment_percentage: 0.8
+		metric_accumulation_level: SAMPLE
+		stop_after: 0
+		ref_flat: /tmp/hg19_wgEncodeGencodeBasicV7_20120222.refFlat
+		ref_file: /tmp/hg19.fa
+	       }
