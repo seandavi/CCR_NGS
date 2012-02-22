@@ -454,44 +454,86 @@ def mark_duplicates(args, pic, cl):
 
     # cleanup(args, pic, rval, stdouts)
 
+# @setup_and_cleanup
+# def create_sequence_dictionary(args, pic, cl):
+
+#     assert args.ref_file, "Did not specify a ref file"
+#     assert args.ref, "Did not specify ref"
+
+#     csd = 'CreateSequenceDictionary'
+#     realjarpath = os.path.split(args.jar)[0]
+#     jarpath = os.path.join(realjarpath,'%s.jar' % csd) # for refseq
+
+#     tmp_ref_fd, tmp_ref_name = tempfile.mkstemp(dir=args.tmpdir , prefix = pic.picname)
+#     args.ref = '%s.fasta' % tmp_ref_name
+
+#     # build dict
+#     dict_file_name = '%s.dict' % tmp_ref_name
+#     os.symlink(args.ref_file, args.ref)
+
+#     cl = ['REFERENCE=%s' % args.ref]
+#     cl.append('OUTPUT=%s' % dict_file_name)
+#     cl.append('URI=%s' % os.path.basename(args.ref_file))
+#     cl.append('TRUNCATE_NAMES_AT_WHITESPACE=%s' % args.trunc_names)
+
+#     if args.species_name:
+#         cl.append('SPECIES=%s' % args.species_name)
+
+#     if args.build_name:
+#         cl.append('GENOME_ASSEMBLY=%s' % args.build_name)
+
+#     pic.delme.append(dict_file_name)
+#     pic.delme.append(args.ref)
+#     pic.delme.append(tmp_ref_name)
+
+#     stdouts,rval = pic.runPic(jarpath, cl)
+
+#     return stdouts, rval
+
+#     # run relevant command(s)
+
 @setup_and_cleanup
-def create_sequence_dictionary(args, pic, cl):
+def collect_rnaseq_metrics(args, pic, cl):
+    """Run CollectRNASeqMetrics tool.
 
-    assert args.ref_file, "Did not specify a ref file"
-    assert args.ref, "Did not specify ref"
+    http://picard.sourceforge.net/command-line-overview.shtml#CollectRnaSeqMetrics
+    
+    """
 
-    csd = 'CreateSequenceDictionary'
-    realjarpath = os.path.split(args.jar)[0]
-    jarpath = os.path.join(realjarpath,'%s.jar' % csd) # for refseq
+    assert args.ref_flat, "Did not specify a ref_flat file, which is required."
+    assert args.output, "Did not specify an output file, which is required."
 
-    tmp_ref_fd, tmp_ref_name = tempfile.mkstemp(dir=args.tmpdir , prefix = pic.picname)
-    args.ref = '%s.fasta' % tmp_ref_name
+    # inputs
+    cl.append('INPUT=%s' % args.input)
 
-    # build dict
-    dict_file_name = '%s.dict' % tmp_ref_name
-    os.symlink(args.ref_file, args.ref)
+    # Gene annotations in refFlat format.
+    cl.append('REF_FLAT=%s' % (args.ref_flat))
 
-    cl = ['REFERENCE=%s' % args.ref]
-    cl.append('OUTPUT=%s' % dict_file_name)
-    cl.append('URI=%s' % os.path.basename(args.ref_file))
-    cl.append('TRUNCATE_NAMES_AT_WHITESPACE=%s' % args.trunc_names)
+    # Gene annotations in refFlat format.
+    cl.append('REFERENCE_SEQUENCE=%s' % (args.ref_file))
 
-    if args.species_name:
-        cl.append('SPECIES=%s' % args.species_name)
+    # locations of rRNA seqs in genome in interval_list format.
+    cl.append('RIBOSOMAL_INTERVALS=%s' % args.ribosomal_intervals)
 
-    if args.build_name:
-        cl.append('GENOME_ASSEMBLY=%s' % args.build_name)
+    cl.append('MINIMUM_LENGTH=%i' % args.minimum_length)
+    cl.append('CHART_OUTPUT=%s' % args.chart_output)
+    cl.append('IGNORE_SEQUENCE=%s' % args.ignore_sequence)
 
-    pic.delme.append(dict_file_name)
-    pic.delme.append(args.ref)
-    pic.delme.append(tmp_ref_name)
+    cl.append('RRNA_FRAGMENT_PERCENTAGE=%d' % args.rrna_fragment_percentage)
+    cl.append('METRIC_ACCUMULATION_LEVEL=%s' % args.metric_accumulation_level)
 
-    stdouts,rval = pic.runPic(jarpath, cl)
+    cl.append('ASSUME_SORTED=%s' % (args.assumesorted.lower()))
 
-    return stdouts, rval
+    cl.append('STOP_AFTER=%i' % (args.stop_after))
+    
+    # outputs
+    cl.append('OUTPUT=%s' % args.output) 
 
-    # run relevant command(s)
+    args.stdouts, args.rval = pic.runPic(args.jar, cl)
+    return args
 
+    
+    
 def __main__():
 
     doFix = False # tools returning htmlfile don't need this
@@ -521,24 +563,39 @@ def __main__():
     parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
     parser.add_argument('--assumesorted', default='True')
     parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
+    parser.add_argument('--ref-file', dest='ref_file', help='Fasta to use as reference', default=None)
 
     # Need subparsers for the various commands
     subparsers = parser.add_subparsers(help="Picard sub-command help", dest='subparser_name')
 
-    # CreateSequenceDictionary
-    createseqdictparser = subparsers.add_parser("CreateSequenceDictionary", help="CreateSequenceDictionary help")
-    createseqdictparser.add_argument('--ref-file', dest='ref_file', help='Fasta to use as reference', default=None)
-    createseqdictparser.add_argument('--species-name', dest='species_name', help='Species name to use in creating dict file from fasta file')
-    createseqdictparser.add_argument('--build-name', dest='build_name', help='Name of genome assembly to use in creating dict file from fasta file')
-    createseqdictparser.add_argument('--trunc-names', dest='trunc_names', help='Truncate sequence names at first whitespace from fasta file')
-    createseqdictparser.set_defaults(func=create_sequence_dictionary)
+    # # CreateSequenceDictionary
+    # createseqdictparser = subparsers.add_parser("CreateSequenceDictionary", help="CreateSequenceDictionary help")
+    # createseqdictparser.add_argument('--species-name', dest='species_name', help='Species name to use in creating dict file from fasta file')
+    # createseqdictparser.add_argument('--build-name', dest='build_name', help='Name of genome assembly to use in creating dict file from fasta file')
+    # createseqdictparser.add_argument('--trunc-names', dest='trunc_names', help='Truncate sequence names at first whitespace from fasta file')
+    # createseqdictparser.set_defaults(func=create_sequence_dictionary)
     
     # MarkDuplicates
     markdupparser = subparsers.add_parser("MarkDuplicates", help="MarkDuplicates help")
     markdupparser.add_argument('--remdups', default='true', help='Remove duplicates from output file')
     markdupparser.add_argument('--optdupdist', default="100", help='Maximum pixels between two identical sequences in order to consider them optical duplicates.')
     markdupparser.set_defaults(func=mark_duplicates)
-    
+
+    # CollectRnaSeqMetrics
+    collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
+    collectrnaseqmetricsparser.add_argument('--ribosomal_intervals', help='Location of ribosomal sequences in genome.', default=None)
+    collectrnaseqmetricsparser.add_argument('--minimum_length', type=int, help='Minimum length [default: %(default)s]', default=500)
+    collectrnaseqmetricsparser.add_argument('--chart_output', help='Output of PDF file', default=None)
+    collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None)
+    collectrnaseqmetricsparser.add_argument('--rrna_fragment_precentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
+    collectrnaseqmetricsparser.add_argument('--metric_accumulation_level', type=str, help='The level(s) at which to accumulate metrics. [default: %(default)s]',
+                                            choices=["ALL_READS", "SAMPLE", "LIBRARY", "READ_GROUP"], default="SAMPLE")
+    collectrnaseqmetricsparser.add_argument('--stop_after', type=int, help='Stop after N reads [default: %(default)s]', default=0)
+    collectrnaseqmetricsparser.set_defaults(func=collect_rnaseq_metrics)
+
+    args = parser.parse_args()
+    args.func(args)
+
     # # CollectInsertSizeMetrics
     # parser.add_argument('', '--taillimit', default="0")
     # parser.add_argument('', '--histwidth', default="0")
@@ -569,9 +626,9 @@ def __main__():
     # parser.add_argument('', '--allow-inc-dict-concord', dest='allow_inc_dict_concord', help='Allow incomplete dict concordance')
     # parser.add_argument('', '--allow-contig-len-discord', dest='allow_contig_len_discord', help='Allow contig length discordance')
 
-    # ReplaceSamHeader
-    repsamheaderparser = subparsers.add_parser("ReplaceSamHeader", help="ReplaceSamHeader help")
-    repsamheaderparser.add_argument('--header-file', dest='header_file', help='sam or bam file from which header will be read')
+    # # ReplaceSamHeader
+    # repsamheaderparser = subparsers.add_parser("ReplaceSamHeader", help="ReplaceSamHeader help")
+    # repsamheaderparser.add_argument('--header-file', dest='header_file', help='sam or bam file from which header will be read')
 
     # #estimatelibrarycomplexity
     # parser.add_argument('','--minid', default="5")
@@ -589,8 +646,6 @@ def __main__():
     # parser.add_argument('','--bamout', default=None)
     # parser.add_argument('','--samout', default=None)
 
-    args = parser.parse_args()
-    args.func(args)
     # args.sortme = (args.assumesorted == 'false')
 
     # need to add
