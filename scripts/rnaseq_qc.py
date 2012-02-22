@@ -55,7 +55,7 @@ def make_fastqc_param_list(samples):
     """
     
     return map(lambda x: [x['filename'], None, None], samples)
-
+    
 test_task_params = make_fastqc_param_list(samples)
 
 #----------------------------------------------
