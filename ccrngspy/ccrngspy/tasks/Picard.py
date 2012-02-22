@@ -552,9 +552,9 @@ def __main__():
 
     # All tools
     parser.add_argument('-i', '--input', dest='input', help='Input SAM or BAM file', type=str)
-    parser.add_argument('-e', '--inputext', default=None)
-    parser.add_argument('-o', '--output', default=None)
-    parser.add_argument('-n', '--title', default="Pick a Picard Tool")
+    parser.add_argument('-e', '--inputext', default=None, type=str)
+    parser.add_argument('-o', '--output', default=None, type=str)
+    parser.add_argument('-n', '--title', default="Pick a Picard Tool", type=str)
     parser.add_argument('-t', '--htmlout', default=None)
     parser.add_argument('-d', '--outdir', default=None)
     parser.add_argument('-x', '--maxjheap', default='4g')
