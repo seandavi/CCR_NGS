@@ -49,7 +49,7 @@ class FastQC(Task.Task):
         return parser
     
     def set_options(self, args):
-        """Use opts and args from argparse.parse_args to populate the class.
+        """Use args from argparse.parse_args to populate the class.
 
         """
 
