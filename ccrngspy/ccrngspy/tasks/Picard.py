@@ -21,6 +21,10 @@ import shutil
 import time
 import logging
 
+from ccrngspy import utils
+
+logger = utils.make_local_logger("Picard logging", level="debug", color="green")
+
 galhtmlprefix = """<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -86,17 +90,20 @@ class PicardBase():
             pass
         self.log_filename = os.path.join(self.opts.outdir,'%s.log' % self.picname)
         self.metricsOut =  os.path.join(opts.outdir,'%s.metrics.txt' % self.picname)
-        self.setLogging(logfname=self.log_filename)
+
+        # removed to use our logging code - logger is set at the module level
+        # self.setLogging(logfname=self.log_filename)
  
     def baseName(self,name=None):
         return os.path.splitext(os.path.basename(name))[0]
 
-    def setLogging(self,logfname="picard_wrapper.log"):
-        """setup a logger
-        """
-        logging.basicConfig(level=logging.INFO,
-                    filename=logfname,
-                    filemode='a')
+    # Removed to use our logging code - logger is set at the module level
+    # def setLogging(self,logfname="picard_wrapper.log"):
+    #     """setup a logger
+    #     """
+    #     logging.basicConfig(level=logging.INFO,
+    #                 filename=logfname,
+    #                 filemode='a')
 
 
     def readLarge(self,fname=None):
