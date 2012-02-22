@@ -8,6 +8,7 @@ It also requires a samples file that has at least a column named 'sample' and 'f
 
 """
 
+import argparse
 import csv
 import sys
 import os
@@ -18,6 +19,7 @@ from ruffus import *
 import yaml
 
 from ccrngspy.tasks import FastQC
+from ccrngspy.tasks import Picard
 
 parser = argparse.ArgumentParser(description="Run fastqc on files.")
 
@@ -58,6 +60,7 @@ def make_fastqc_param_list(samples):
     
 test_task_params = make_fastqc_param_list(samples)
 
+
 #----------------------------------------------
 # begin tasks here
 #----------------------------------------------
@@ -71,7 +74,34 @@ def run_fastqc(input, output, params=None):
     fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
     fastqc_task.run_fastqc()
 
+def run_gsnap(input, output, params=None):
+    """Run gsnap.
+    
+    """
 
+def run_collect_rnaseq_metrics(input, output, params=None):
+    """Set up and run the Picard CollectRnaSeqMetrics program.
+    
+    """
+    
+    # Let a parser argument handle setting up arguments and options
+    parser = argparse.ArgumentParser()
+    
+    # Add Picard arguments
+    picard = Picard.PicardBase()
+    parser = picard.argparse(parser)
+
+    # Update input and output from global config object
+    picard_params = config['picard_params']
+    picard_params['input'] = input
+    picard_params['output'] = output
+    
+    # Set up using the default arguments, specifying the input and output files since they are required!
+    args = parser.parse_args("CollectRnaSeqMetrics --input=%(input) --output=%(output)s --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s --ref_flat=%(ref_flat) --ref_file=%(ref_file)" % picard_params)
+    
+    # Run the function for collecting RNASeq metrics
+    args.func(args)
+    
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_fastqc])
 else:
