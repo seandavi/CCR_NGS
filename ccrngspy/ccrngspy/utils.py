@@ -1,6 +1,8 @@
 import subprocess
 import shlex
 import logging
+import tempfile
+import time
 
 def safe_run(cmd, shell=False):
     res = None
@@ -14,6 +16,34 @@ def safe_run(cmd, shell=False):
             res = subprocess.call(shlex.split(cmd))
     
     return(res)
+
+# Could have these in the header too
+# #PBS -N %(jobname)s
+# #PBS -k oe
+
+_script_header = """
+#!/bin/bash
+"""
+
+def safe_qsub_run(cmd, jobname, script_header=_script_header, shell=False):
+    """Run a command via qsub in blocking mode so that the command waits to exit.
+
+    Requires a header string and a job name.
+   
+    """
+    
+    scriptfile = tempfile.NamedTemporaryFile()
+    scriptfile.write("%(header)s\n%(command)\n" % dict(header=script_header, command=cmd))
+    scriptfile.file.flush()
+
+    qsub_cmd = "qsub -n %(jobname)s -l nodes=1 -W block=true %(script)s" % dict(jobname=jobname,
+                                                                                script=scriptfile.name)
+
+    proc = subprocess.Popen(qsub_cmd, shell=True, stdout=subprocess.PIPE)
+    jobid = proc.communicate()[0].rstrip()
+    scriptfile.close()
+
+    return jobid
 
 _LOGGING_LEVEL = {'debug': logging.DEBUG,
                   'info': logging.INFO,
