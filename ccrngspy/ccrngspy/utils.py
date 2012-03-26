@@ -36,7 +36,7 @@ def safe_qsub_run(cmd, jobname, script_header=_script_header, shell=False):
     scriptfile.write("%(header)s\n%(command)s\n" % dict(header=script_header, command=cmd))
     scriptfile.file.flush()
 
-    qsub_cmd = "qsub -n %(jobname)s -l nodes=1 -W block=true %(script)s" % dict(jobname=jobname,
+    qsub_cmd = "qsub -N %(jobname)s -l nodes=1 -W block=true %(script)s" % dict(jobname=jobname,
                                                                                 script=scriptfile.name)
 
     proc = subprocess.Popen(qsub_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
