@@ -23,6 +23,8 @@ from ccrngspy.tasks import Picard
 from ccrngspy.pipeline import fastqc_helpers
 from ccrngspy import utils
 
+logger = utils.make_local_logger("Ruffus RNASeq QC Logger", level="debug", color=True)
+
 parser = argparse.ArgumentParser(description="Run fastqc on files.")
 
 parser.add_argument("--print_only", dest="print_only", action="store_true", default=False,
@@ -74,6 +76,7 @@ def run_fastqc(input, output, params=None):
     fastqc_command = fastqc_task.make_command()
 
     jobid, err = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
+    logger.debug("jobid = %s, err = %s" % (jobid, err))
     
     # post task, touch output file!
     of = file(output, mode="w")
@@ -112,5 +115,5 @@ def run_collect_rnaseq_metrics(input, output, params=None):
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_setup_log_dir, run_fastqc])
 else:
-    pipeline_run([run_setup_log_dir, run_fastqc], multiprocess=5)
+    pipeline_run([run_setup_log_dir, run_fastqc], multiprocess=5, logger=logger)
 
