@@ -33,17 +33,18 @@ def safe_qsub_run(cmd, jobname, script_header=_script_header, shell=False):
     """
     
     scriptfile = tempfile.NamedTemporaryFile()
-    scriptfile.write("%(header)s\n%(command)\n" % dict(header=script_header, command=cmd))
+    scriptfile.write("%(header)s\n%(command)s\n" % dict(header=script_header, command=cmd))
     scriptfile.file.flush()
 
     qsub_cmd = "qsub -n %(jobname)s -l nodes=1 -W block=true %(script)s" % dict(jobname=jobname,
                                                                                 script=scriptfile.name)
 
-    proc = subprocess.Popen(qsub_cmd, shell=True, stdout=subprocess.PIPE)
-    jobid = proc.communicate()[0].rstrip()
+    proc = subprocess.Popen(qsub_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    so, se = proc.communicate()
+    jobid = so.rstrip()
     scriptfile.close()
 
-    return jobid
+    return jobid, se
 
 _LOGGING_LEVEL = {'debug': logging.DEBUG,
                   'info': logging.INFO,
