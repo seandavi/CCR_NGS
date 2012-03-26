@@ -1,0 +1,15 @@
+general_params: {
+    fastq_input_dir: /data/dailykm/CCR_NGS/example_data/fastq/,
+    log_file_dir: /tmp/ruffus_ccrngs/,
+}
+fastqc_params: {output_dir: /tmp/}
+picard_params: {
+    minimum_length: 500,
+    rrna_fragment_percentage: 0.8,
+    metric_accumulation_level: SAMPLE,
+    stop_after: 0,
+    ref_flat: /tmp/hg19_wgEncodeGencodeBasicV7_20120222.refFlat,
+    ref_file: /tmp/hg19.fa,
+    ribosomal_intervals: ,
+    chart_output: ,
+}
