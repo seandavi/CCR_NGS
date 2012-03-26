@@ -120,5 +120,5 @@ def run_collect_rnaseq_metrics(input, output, params=None):
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_setup_log_dir, run_fastqc])
 else:
-    pipeline_run([run_setup_log_dir, run_fastqc], multiprocess=5, logger=logger)
+    pipeline_run([run_setup_log_dir, run_mk_output_dir, run_fastqc], multiprocess=5, logger=logger)
 
