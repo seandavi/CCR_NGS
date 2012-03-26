@@ -2,7 +2,7 @@ general_params: {
     fastq_input_dir: /data/dailykm/CCR_NGS/example_data/fastq/,
     log_file_dir: /tmp/ruffus_ccrngs/,
 }
-fastqc_params: {output_dir: /tmp/}
+fastqc_params: {output_dir: /tmp/ruffus_ccrngs/}
 picard_params: {
     minimum_length: 500,
     rrna_fragment_percentage: 0.8,
