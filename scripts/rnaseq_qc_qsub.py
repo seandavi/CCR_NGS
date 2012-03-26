@@ -73,7 +73,7 @@ def run_fastqc(input, output, params=None):
     fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
     fastqc_command = fastqc_task.make_command()
 
-    jobid, err = utils.safe_qsub_run(fastqc_command)
+    jobid, err = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     
     # post task, touch output file!
     of = file(output, mode="w")
