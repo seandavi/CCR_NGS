@@ -65,7 +65,12 @@ def run_setup_log_dir(input=None, output=None, params=None):
     if not opts.no_create_log_dir:
         os.mkdir(config['general_params']['log_file_dir'])
 
+def run_mk_output_dir(input=None, output=None, params=None):
+    if not opts.no_create_log_dir:
+        os.mkdir(config['fastqc_params']['output_dir'])
+
 @follows(run_setup_log_dir)
+@follows(run_mk_output_dir)
 @files(test_task_params)
 def run_fastqc(input, output, params=None):
     """Set up and run the fastqc program.
