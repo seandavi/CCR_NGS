@@ -21,6 +21,7 @@ import yaml
 from ccrngspy.tasks import FastQC
 from ccrngspy.tasks import Picard
 from ccrngspy.pipeline import fastqc_helpers
+from ccrngspy import utils
 
 parser = argparse.ArgumentParser(description="Run fastqc on files.")
 
