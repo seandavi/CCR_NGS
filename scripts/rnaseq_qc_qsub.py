@@ -70,8 +70,10 @@ def run_fastqc(input, output, params=None):
     """
 
     fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
-    fastqc_task.run_fastqc()
+    fastqc_command = fastqc_task.make_command()
 
+    jobid, err = utils.safe_qsub_run(fastqc_command)
+    
     # post task, touch output file!
     of = file(output, mode="w")
     of.close()
@@ -80,6 +82,8 @@ def run_gsnap(input, output, params=None):
     """Run gsnap.
     
     """
+
+    pass
 
 def run_collect_rnaseq_metrics(input, output, params=None):
     """Set up and run the Picard CollectRnaSeqMetrics program.
