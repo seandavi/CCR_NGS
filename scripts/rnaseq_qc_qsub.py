@@ -54,8 +54,8 @@ with open(opts.sample_file, 'r') as samplefile:
     reader = csv.DictReader(samplefile, delimiter="\t")
     samples = list(reader)
 
-
-test_task_params = fastqc_helpers.make_fastqc_param_list(samples=samples, config=config)
+fastqc_test_task_params = fastqc_helpers.make_fastqc_param_list(samples=samples, config=config)
+rum_test_task_params = fastqc_helpers.make_rum_param_list(samples=samples, config=config)
 
 #----------------------------------------------
 # begin tasks here
@@ -77,7 +77,22 @@ def run_fastqc(input, output, params=None):
     
     """
 
-    fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
+    # Let a parser argument handle setting up arguments and options
+    parser = argparse.ArgumentParser()
+    
+    # Add Picard arguments
+    fastqc = FastQC.FastQC()
+    parser = fastqc.argparse(parser)
+
+    # Update input and output from global config object
+    fastqc_params = config['fastqc_params']
+    fastqc_params['input'] = input
+
+    args = parser.parse_args("-o %(output_dir)s -t %(threads)s %(input)s" % fastqc_params)
+
+    fastqc.set_options(args)
+    
+    # fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
     fastqc_command = fastqc_task.make_command()
 
     jobid, err = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
@@ -86,6 +101,46 @@ def run_fastqc(input, output, params=None):
     # post task, touch output file!
     of = file(output, mode="w")
     of.close()
+
+@follows(run_setup_log_dir)
+@follows(run_mk_output_dir)
+def run_rum(input, output, params=None):
+    """Run RUM on paired reads.
+    
+    """
+
+    # Let a parser argument handle setting up arguments and options
+    parser = argparse.ArgumentParser()
+    
+    # Add Picard arguments
+    rum = RUM.RUMrunner()
+    parser = rum.argparse(parser)
+
+    # Update input and output from global config object
+    rum_params = config['rum_params']
+    rum_params['input'] = input
+    rum_params['name'] = params['rum_name']
+
+    ## fastq read files
+    rum_params['file1'] = input[0]
+    rum_params['file2'] = input[1]
+    
+    args = parser.parse_args("--rum_config_file=%(config_file)s --rum_run_name=%(name)s --rum_outdir=%(output_dir)s --rum_read_files %(file1)s %(file2)s " % rum_params)
+
+    fastqc.set_options(args)
+    
+    # fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
+    fastqc_command = fastqc_task.make_command()
+
+    jobid, err = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
+    logger.debug("jobid = %s, err = %s" % (jobid, err))
+    
+    # post task, touch output file!
+    of = file(output, mode="w")
+    of.close()
+
+    pass
+
 
 def run_gsnap(input, output, params=None):
     """Run gsnap.
