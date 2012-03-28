@@ -1,15 +1,26 @@
 general_params: {
+    run_name: test_yaml,
     fastq_input_dir: /var/preserve/git/CCR_NGS/example_data/fastq/,
     log_file_dir: /tmp/ruffus_ccrngs/,
 }
-fastqc_params: {output_dir: /tmp/}
+fastqc_params: {
+    output_dir: /tmp/ruffus_ccrngs/fastqc/,
+    threads: 4
+}
 picard_params: {
+    output_dir: /tmp/ruffus_ccrngs/picard/,
     minimum_length: 500,
     rrna_fragment_percentage: 0.8,
     metric_accumulation_level: SAMPLE,
     stop_after: 0,
-    ref_flat: /tmp/hg19_wgEncodeGencodeBasicV7_20120222.refFlat,
-    ref_file: /tmp/hg19.fa,
+    ref_flat: /data/dailykm/UCSC/hg19_wgEncodeGencodeBasicV7_20120328.refFlat,
+    ref_file: /fdb/genome/human-feb2009/chr_all.fa,
     ribosomal_intervals: ,
     chart_output: ,
+}
+rum_params: {
+    output_dir: /tmp/ruffus_ccrngs/rum/,
+    exec: /var/preserve/src/rum/bin/RUM_runner.pl,
+    config_file: /var/preserve/src/rum/conf/rum.config_hg19,
+    threads: 3
 }
