@@ -418,7 +418,7 @@ class PicardBase():
         # parser.add_argument('--picard-cmd', default=None)
 
         # Many tools
-        parser.add_argument('--output_format', dest='output_format', help='Output format', default="sam")
+        parser.add_argument('--output_format', dest='output_format', help='Output format', default="sam", choices=["sam", ""])
         parser.add_argument('--bai_file', dest='bai_file', help='The path to the index file for the input bam file')
         parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
         parser.add_argument('--assumesorted', default='True')
