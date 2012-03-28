@@ -53,6 +53,7 @@ class FastQC(Task.Task):
 
         """
 
+        logger.debug("input_files = %s" % (args.input_files, ))
         self.__init__(input_files=args.input_files, output_directory=args.output_directory,
                       threads=args.threads, casava=args.casava)
 
