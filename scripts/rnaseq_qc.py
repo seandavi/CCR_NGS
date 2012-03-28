@@ -166,17 +166,12 @@ def run_rum(input, output, params=None):
     
     rum_command = rum.make_command()
 
-    logger.
-
     stdout, stderr = utils.safe_run(rum_command, shell=False)
     logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
     # post task, touch output file!
     of = file(output, mode="w")
     of.close()
-
-    pass
-
 
 def run_gsnap(input, output, params=None):
     """Run gsnap.
@@ -190,12 +185,12 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     
     """
     
-    # Let a parser argument handle setting up arguments and options
-    parser = argparse.ArgumentParser()
+    # # Let a parser argument handle setting up arguments and options
+    # parser = argparse.ArgumentParser()
     
-    # Add Picard arguments
-    picard = Picard.PicardBase()
-    parser = picard.argparse(parser)
+    # # Add Picard arguments
+    # picard = Picard.PicardBase()
+    # parser = picard.argparse(parser)
 
     # Update input and output from global config object
     picard_params = config['picard_params']
@@ -204,10 +199,20 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     
     # Set up using the default arguments, specifying the input and output files since they are required!
     cmdline = "CollectRnaSeqMetrics --input=%(input)s --output=%(output)s --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s --ref_flat=%(ref_flat) --ref_file=%(ref_file)" % picard_params
-    args = parser.parse_args(cmdline.split())
+
+    # args = parser.parse_args(cmdline.split())
     
-    # Run the function for collecting RNASeq metrics
-    args.func(args)
+    # # Run the function for collecting RNASeq metrics
+    # args.func(args)
+    
+    picard_cmd = "python -m ccrngspy.tasks.Picard %s" % cmdline
+    stdout, stderr = utils.safe_run(picard_cmd, shell=False)
+    logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+    
+    # post task, touch output file!
+    of = file(output, mode="w")
+    of.close()
+
     
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_setup_log_dir, run_fastqc])
