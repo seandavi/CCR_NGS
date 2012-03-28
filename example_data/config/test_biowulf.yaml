@@ -17,6 +17,7 @@ picard_params: {
     ribosomal_intervals: ,
     chart_output: ,
     jar_file: /usr/local/picard/CollectRnaSeqMetrics.jar
+    output_dir: /data/dailykm/CCR_NGS/test_run/picard/,
 }
 rum_params: {
     output_dir: /data/dailykm/CCR_NGS/test_run/rum/,
