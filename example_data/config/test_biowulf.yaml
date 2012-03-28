@@ -10,16 +10,21 @@ fastqc_params: {
 picard_params: {
     minimum_length: 500,
     rrna_fragment_percentage: 0.8,
-    metric_accumulation_level: SAMPLE,
+    metric_accumulation_level: ALL_READS,
     stop_after: 0,
     ref_flat: /data/dailykm/UCSC/hg19_wgEncodeGencodeBasicV7_20120328.refFlat,
     ref_file: /fdb/genome/human-feb2009/chr_all.fa,
     ribosomal_intervals: ,
     chart_output: ,
+    jar_file: /usr/local/picard/CollectRnaSeqMetrics.jar
 }
 rum_params: {
     output_dir: /data/dailykm/CCR_NGS/test_run/rum/,
     exec: /usr/local/rum/bin/RUM_runner.pl
     config_file: /usr/local/rum/conf/rum.config_hg19
     threads: 3
+}
+picard_sortsam_params: {
+    jar_file: /usr/local/picard/CollectRnaSeqMetrics.jar,
+    sort_order=coordinate
 }
