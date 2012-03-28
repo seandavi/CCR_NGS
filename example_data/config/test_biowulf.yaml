@@ -12,7 +12,7 @@ picard_params: {
     rrna_fragment_percentage: 0.8,
     metric_accumulation_level: ALL_READS,
     stop_after: 0,
-    ref_flat: /data/dailykm/UCSC/hg19_wgEncodeGencodeBasicV7_20120328.refFlat,
+    ref_flat: /data/dailykm/UCSC/hg19_wgEncodeGencodeBasicV10_20120328.refFlat,
     ref_file: /fdb/genome/human-feb2009/chr_all.fa,
     ribosomal_intervals: ,
     chart_output: ,
