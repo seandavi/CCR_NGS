@@ -130,35 +130,52 @@ class PicardBase():
         except Exception, e:
             stop_err('Read Large Exception : %s' % str(e))   
         return s
-    
-    def runCL(self, cl=None, output_dir=None):
-        """ construct and run a command line
-        we have galaxy's temp path as opt.temp_dir so don't really need isolation
-        sometimes stdout is needed as the output - ugly hacks to deal with potentially vast artifacts
+
+    def constructCL(self, cl=None, output_dir=None):
+        """Constrct the command line
+
         """
+
         assert cl <> None, 'PicardBase runCL needs a command line as cl'
+
         if output_dir == None:
             output_dir = self.opts.outdir
         if type(cl) == type([]):
             cl = ' '.join(cl)
-        fd,templog = tempfile.mkstemp(dir=output_dir,suffix='rgtempRun.txt')
-        tlf = open(templog,'wb')
-        fd,temperr = tempfile.mkstemp(dir=output_dir,suffix='rgtempErr.txt')
-        tef = open(temperr,'wb')
-        process = subprocess.Popen(cl, shell=True, stderr=tef, stdout=tlf, cwd=output_dir)
+
+        return cl
+    
+    def runCL(self, cl=None, output_dir=None):
+        """Run a command line.
+        we have galaxy's temp path as opt.temp_dir so don't really need isolation
+        sometimes stdout is needed as the output - ugly hacks to deal with potentially vast artifacts
+
+        """
+
+        # stdout and stderr redirected to these
+        # fd,templog = tempfile.mkstemp(dir=output_dir,suffix='rgtempRun.txt')
+        # tlf = open(templog,'wb')
+        # fd,temperr = tempfile.mkstemp(dir=output_dir,suffix='rgtempErr.txt')
+        # tef = open(temperr,'wb')
+
+        cl = self.constructCL(cl=cl, output_dir=output_dir)
+        
+        process = subprocess.Popen(cl, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=output_dir)
         rval = process.wait()
-        tlf.close()
-        tef.close()
-        stderrs = self.readLarge(temperr)
-        stdouts = self.readLarge(templog)        
+        # tlf.close()
+        # tef.close()
+        # stderrs = self.readLarge(temperr)
+        # stdouts = self.readLarge(templog)        
+
         if rval > 0:
             s = '## executing %s returned status %d and stderr: \n%s\n' % (cl,rval,stderrs)
             stdouts = '%s\n%s' % (stdouts,stderrs)
         else:
             s = '## executing %s returned status %d and nothing on stderr\n' % (cl,rval)
-        logging.info(s)
-        os.unlink(templog) # always
-        os.unlink(temperr) # always
+
+        # logging.info(s)
+        # os.unlink(templog) # always
+        # os.unlink(temperr) # always
         return s, stdouts, rval  # sometimes s is an output
     
     def runPic(self, jar, cl):
@@ -401,8 +418,8 @@ class PicardBase():
         # parser.add_argument('--picard-cmd', default=None)
 
         # Many tools
-        parser.add_argument('--output-format', dest='output_format', help='Output format')
-        parser.add_argument('--bai-file', dest='bai_file', help='The path to the index file for the input bam file')
+        parser.add_argument('--output_format', dest='output_format', help='Output format', default="sam")
+        parser.add_argument('--bai_file', dest='bai_file', help='The path to the index file for the input bam file')
         parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
         parser.add_argument('--assumesorted', default='True')
         parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
@@ -437,6 +454,14 @@ class PicardBase():
         collectrnaseqmetricsparser.set_defaults(func=collect_rnaseq_metrics)
 
         return parser
+
+    def set_options(self, args):
+        """Use args from argparse.parse_args to populate the class.
+
+        """
+
+        self.__init__(opts=args)
+
 
 def setup(args):
     """Do things that all functions may require.
@@ -595,13 +620,6 @@ def collect_rnaseq_metrics(args, pic, cl):
     args.stdouts, args.rval = pic.runPic(args.jar, cl)
     return args
 
-
-    def set_options(self, args):
-        """Use args from argparse.parse_args to populate the class.
-
-        """
-
-        self.__init__(opts=args)
 
         
     
