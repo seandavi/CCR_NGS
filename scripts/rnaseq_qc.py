@@ -70,19 +70,20 @@ rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=c
 # begin tasks here
 #----------------------------------------------
 
-@follows(mkdir(config['general_params']['log_file_dir']))
-def run_setup_log_dir(input=None, output=None, params=None):
+@follows(mkdir(config['general_params']['log_file_dir']),
+         mkdir(config['fastqc_params']['output_dir']),
+         mkdir(config['rum_params']['output_dir']),
+         mkdir(config['picard_params']['output_dir']))
+def run_setup_dir(input=None, output=None, params=None):
     pass
 
 @follows(run_setup_log_dir)
 def run_mk_output_dir(input=None, output=None, params=None):
-
     if not opts.no_create_output_dir:
-
-        # Make output directories for each task
-        os.mkdir(config['fastqc_params']['output_dir'])
-        os.mkdir(config['rum_params']['output_dir'])
-        os.mkdir(config['picard_params']['output_dir'])
+        # # Make output directories for each task
+        # os.mkdir(config['fastqc_params']['output_dir'])
+        # os.mkdir(config['rum_params']['output_dir'])
+        # os.mkdir(config['picard_params']['output_dir'])
         
         # Make RUM output directory for each sample
         for sample in samples:
@@ -250,5 +251,5 @@ def run_collect_rnaseq_metrics(input, output, params=None):
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_setup_log_dir, run_fastqc])
 else:
-    pipeline_run([run_setup_log_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics], multiprocess=5, logger=logger)
+    pipeline_run([run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics], multiprocess=5, logger=logger)
 
