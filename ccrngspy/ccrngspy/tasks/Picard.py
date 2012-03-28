@@ -424,6 +424,7 @@ class PicardBase():
         parser.add_argument('--assumesorted', default='True')
         parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
         parser.add_argument('--ref_file', dest='ref_file', help='Fasta to use as reference', default=None)
+        parser.add_argument('--ref_flat', dest='ref_flat', help='Ref flat to use as reference', default=None)
 
         # Need subparsers for the various commands
         subparsers = parser.add_subparsers(help="Picard sub-command help", dest='subparser_name')
