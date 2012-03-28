@@ -20,14 +20,13 @@ def make_rum_param_list(samples, config, params=None):
 
     final_list = []
 
-    fastq_dir = config['general_params']['fastq_input_dir']
+    rum_dir = config['rum_params']['output_dir']
     log_dir = config['general_params']['log_file_dir']
     
     for sample in samples:
-        tmp = [[os.path.join(fastq_dir, sample['filename1']),
-                os.path.join(fastq_dir, sample['filename2'])],
-                os.path.join(log_dir, "%s.rum.LOG" % sample['samplename']),
-                params]
+        tmp = [os.path.join(fastq_dir, sample['samplename', RUM.sam]),
+               os.path.join(log_dir, "%s.picard.LOG" % sample['samplename']),
+               params]
         
         final_list.append(tmp)
 
