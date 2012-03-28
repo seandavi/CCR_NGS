@@ -450,6 +450,7 @@ class PicardBase():
         # CollectRnaSeqMetrics
         collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
         collectrnaseqmetricsparser.add_argument('--ribosomal_intervals', help='Location of ribosomal sequences in genome.', default=None)
+        collectrnaseqmetricsparser.add_argument('--strand_specificity', help='Strand specificity.', default="NONE", choices=["NONE", "FIRST_READ_TRANSCRIPTION_STRAND", "SECOND_READ_TRANSCRIPTION_STRAND"])
         collectrnaseqmetricsparser.add_argument('--minimum_length', type=int, help='Minimum length [default: %(default)s]', default=500)
         collectrnaseqmetricsparser.add_argument('--chart_output', help='Output of PDF file', default=None)
         collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None)
@@ -619,7 +620,7 @@ def collect_rnaseq_metrics(args, pic, cl):
     cl.append('ASSUME_SORTED=%s' % (args.assumesorted.lower()))
 
     cl.append('STOP_AFTER=%i' % (args.stop_after))
-    
+
     # outputs
     cl.append('OUTPUT=%s' % args.output) 
 
