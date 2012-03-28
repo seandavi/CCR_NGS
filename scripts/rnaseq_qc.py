@@ -70,10 +70,11 @@ rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=c
 # begin tasks here
 #----------------------------------------------
 
+@follows(mkdir(config['general_params']['log_file_dir']))
 def run_setup_log_dir(input=None, output=None, params=None):
-    if not opts.no_create_log_dir:
-        os.mkdir(config['general_params']['log_file_dir'])
+    pass
 
+@follows(run_setup_log_dir)
 def run_mk_output_dir(input=None, output=None, params=None):
 
     if not opts.no_create_output_dir:
@@ -82,7 +83,7 @@ def run_mk_output_dir(input=None, output=None, params=None):
         os.mkdir(config['fastqc_params']['output_dir'])
         os.mkdir(config['rum_params']['output_dir'])
         os.mkdir(config['picard_params']['output_dir'])
-
+        
         # Make RUM output directory for each sample
         for sample in samples:
             sample_output_dir = os.path.join(config['rum_params']['output_dir'], sample['samplename'])
@@ -230,7 +231,7 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     picard_params['output'] = output
     
     # Set up using the default arguments, specifying the input and output files since they are required!
-    cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s  --ref_flat=%(ref_flat) --ref_file=%(ref_file) CollectRnaSeqMetrics --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s" % picard_params
+    cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s --ref_flat=%(ref_flat) --ref_file=%(ref_file) CollectRnaSeqMetrics --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s" % picard_params
 
     # args = parser.parse_args(cmdline.split())
     
@@ -249,5 +250,5 @@ def run_collect_rnaseq_metrics(input, output, params=None):
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_setup_log_dir, run_fastqc])
 else:
-    pipeline_run([run_setup_log_dir, run_mk_output_dir, run_fastqc, run_rum], multiprocess=5, logger=logger)
+    pipeline_run([run_setup_log_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics], multiprocess=5, logger=logger)
 
