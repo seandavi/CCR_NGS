@@ -417,7 +417,7 @@ class PicardBase():
         parser.add_argument('-d', '--outdir', default=None)
         parser.add_argument('-x', '--maxjheap', default='4g')
         parser.add_argument('-b', '--bisulphite', default='false')
-        parser.add_argument('-s', '--sortorder', default='query')     
+        parser.add_argument('--sort_order', dest='sort_order', help='Sort order', default="coordinate", choices=["unsorted", "queryname", "coordinate"])
         parser.add_argument('--tmpdir', default='/tmp')
         parser.add_argument('-j', '--jar', default='')    
         # parser.add_argument('--picard-cmd', default=None)
@@ -449,7 +449,6 @@ class PicardBase():
 
         # SortSam
         sortsamparser = subparsers.add_parser("SortSam", help="SortSam help")
-        sortsamparser.add_argument('--sort_order', dest='sort_order', help='Sort order', default="coordinate", choices=["unsorted", "queryname", "coordinate"])
         sortsamparser.set_defaults(func=sort_sam)
 
         # CollectRnaSeqMetrics
@@ -906,7 +905,7 @@ def __main__():
   #   elif pic.picname == 'FixMateInformation':
   #       cl.append('I=%s' % opts.input)
   #       cl.append('O=%s' % tempout)
-  #       cl.append('SORT_ORDER=%s' % opts.sortorder)
+  #       cl.append('SORT_ORDER=%s' % opts.sort_order)
   #       stdouts,rval = pic.runPic(opts.jar,cl)
   #       haveTempout = True
         
