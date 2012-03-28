@@ -245,7 +245,8 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     of.close()
 
 
-job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
+# job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
+job_list = [run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
