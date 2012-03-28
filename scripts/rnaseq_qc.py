@@ -197,6 +197,7 @@ def run_sort_sam(input, output, params=None):
     picard_params['input'] = input
     picard_params['output'] = output
 
+    logger.debug("picard_params = %s" % (picard_params,))
     # Set up using the default arguments, specifying the input and output files since they are required!
     cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s --sort_order=%(sort_order)s SortSam" % picard_params
 
