@@ -26,6 +26,6 @@ rum_params: {
     threads: 3
 }
 picard_sortsam_params: {
-    jar_file: /usr/local/picard/CollectRnaSeqMetrics.jar,
+    jar_file: /usr/local/picard/SortSam.jar,
     sort_order: coordinate
 }
