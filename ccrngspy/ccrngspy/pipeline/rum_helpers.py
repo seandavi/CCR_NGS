@@ -6,7 +6,7 @@ import os
 
 from ccrngspy import utils
 
-logger = utils.make_local_logger("FastQC helper logging", level="debug", color="green")
+logger = utils.make_local_logger("RUM helper logging", level="debug", color="green")
 
 def make_rum_param_list(samples, config, params=None):
     """Helper function to turn the sample file into a list of files.
