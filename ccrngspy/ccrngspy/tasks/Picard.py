@@ -447,6 +447,11 @@ class PicardBase():
         markdupparser.add_argument('--optdupdist', default="100", help='Maximum pixels between two identical sequences in order to consider them optical duplicates.')
         markdupparser.set_defaults(func=mark_duplicates)
 
+        # SortSam
+        sortsamparser = subparsers.add_parser("SortSam", help="SortSam help")
+        sortsamparser.add_argument('--sort_order', dest='sort_order', help='Sort order', default="coordinate", choices=["unsorted", "queryname", "coordinate"])
+        sortsamparser.set_defaults(func=sort_sam)
+
         # CollectRnaSeqMetrics
         collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
         collectrnaseqmetricsparser.add_argument('--ribosomal_intervals', help='Location of ribosomal sequences in genome.', default=None)
@@ -547,6 +552,21 @@ def mark_duplicates(args, pic, cl):
     args.stdouts, args.rval = pic.runPic(args.jar, cl)
     return args
 
+@setup_and_cleanup
+def sort_sam(args, pic, cl):
+
+    # input
+    cl.append('INPUT=%s' % args.input)
+
+    # outputs
+    cl.append('OUTPUT=%s' % args.output) 
+
+    # sort order
+    cl.append('SORT_ORDER=%s' % args.sort_order) 
+
+    args.stdouts, args.rval = pic.runPic(args.jar, cl)
+    return args
+    
     # cleanup(args, pic, rval, stdouts)
 
 # @setup_and_cleanup
