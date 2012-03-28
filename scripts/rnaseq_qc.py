@@ -77,7 +77,7 @@ rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=c
 def run_setup_dir(input=None, output=None, params=None):
     pass
 
-@follows(run_setup_log_dir)
+@follows(run_setup_dir)
 def run_mk_output_dir(input=None, output=None, params=None):
     if not opts.no_create_output_dir:
         # # Make output directories for each task
@@ -95,7 +95,6 @@ def run_mk_output_dir(input=None, output=None, params=None):
             sample_output_dir = os.path.join(config['picard_params']['output_dir'], sample['samplename'])
             os.mkdir(sample_output_dir)
             
-@follows(run_setup_log_dir)
 @follows(run_mk_output_dir)
 @files(fastqc_test_task_params)
 def run_fastqc(input, output, params=None):
