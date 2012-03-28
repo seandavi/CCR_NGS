@@ -5,17 +5,18 @@ import tempfile
 import time
 
 def safe_run(cmd, shell=False):
-    res = None
+    proc = None
 
     if (isinstance(cmd, list)):
-        res = subprocess.call(cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         if shell:
-            res = subprocess.call(cmd, shell=True)
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
-            res = subprocess.call(shlex.split(cmd))
-    
-    return(res)
+            proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    so, se = proc.communicate()
+
+    return (so, se)
 
 # Could have these in the header too
 # #PBS -N %(jobname)s
