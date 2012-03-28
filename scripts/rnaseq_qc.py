@@ -135,7 +135,6 @@ def run_fastqc(input, output, params=None):
     of = file(output, mode="w")
     of.close()
 
-@follows(run_setup_log_dir)
 @follows(run_mk_output_dir)
 @files(rum_test_task_params)
 def run_rum(input, output, params=None):
@@ -248,7 +247,7 @@ def run_collect_rnaseq_metrics(input, output, params=None):
 
     
 if opts.print_only:
-    pipeline_printout(sys.stdout, [run_setup_log_dir, run_fastqc])
+    pipeline_printout(sys.stdout, [run_setup_dir, run_fastqc])
 else:
     pipeline_run([run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics], multiprocess=5, logger=logger)
 
