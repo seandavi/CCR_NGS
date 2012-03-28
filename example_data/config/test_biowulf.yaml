@@ -1,7 +1,7 @@
 general_params: {
     run_name: test_biowulf_yaml,
     fastq_input_dir: /data/dailykm/CCR_NGS/example_data/fastq/,
-    log_file_dir: /tmp/ruffus_ccrngs/,
+    log_file_dir: /data/dailykm/CCR_NGS/test_run/,
 }
 fastqc_params: {
     output_dir: /data/dailykm/CCR_NGS/test_run/fastqc/,
