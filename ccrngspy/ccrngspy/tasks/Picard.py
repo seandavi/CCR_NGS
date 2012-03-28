@@ -157,15 +157,18 @@ class PicardBase():
         # tlf = open(templog,'wb')
         # fd,temperr = tempfile.mkstemp(dir=output_dir,suffix='rgtempErr.txt')
         # tef = open(temperr,'wb')
-
-        cl = self.constructCL(cl=cl, output_dir=output_dir)
-        
-        process = subprocess.Popen(cl, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=output_dir)
-        rval = process.wait()
+        # process = subprocess.Popen(cl, shell=True, stderr=tlf, stdout=tef, cwd=output_dir)
+        # rval = process.wait()
         # tlf.close()
         # tef.close()
         # stderrs = self.readLarge(temperr)
         # stdouts = self.readLarge(templog)        
+
+        cl = self.constructCL(cl=cl, output_dir=output_dir)
+        
+        process = subprocess.Popen(cl, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=output_dir)
+        stdouts, stderrs = process.communicate()
+        rval = process.returncode
 
         if rval > 0:
             s = '## executing %s returned status %d and stderr: \n%s\n' % (cl,rval,stderrs)
