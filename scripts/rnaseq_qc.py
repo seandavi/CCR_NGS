@@ -229,7 +229,7 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     picard_params['output'] = output
     
     # Set up using the default arguments, specifying the input and output files since they are required!
-    cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s --ref_flat=%(ref_flat) --ref_file=%(ref_file) CollectRnaSeqMetrics --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s" % picard_params
+    cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s --ref_flat=%(ref_flat)s --ref_file=%(ref_file) CollectRnaSeqMetrics --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s" % picard_params
 
     # args = parser.parse_args(cmdline.split())
     
