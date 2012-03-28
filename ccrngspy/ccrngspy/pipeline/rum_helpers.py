@@ -25,8 +25,11 @@ def make_rum_param_list(samples, config, params=None):
     fastq_dir = config['general_params']['fastq_input_dir']
     log_dir = config['general_params']['log_file_dir']
     rum_dir = config['rum_params']['output_dir']
+
     
     for sample in samples:
+        params['sample'] = sample['samplename']
+    
         tmp = [[os.path.join(fastq_dir, sample['filename1']),
                 os.path.join(fastq_dir, sample['filename2'])],
                os.path.join(rum_dir, sample['samplename'], "RUM.sam"),
