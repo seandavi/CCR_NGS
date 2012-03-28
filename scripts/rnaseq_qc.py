@@ -173,12 +173,44 @@ def run_rum(input, output, params=None):
     of = file(output, mode="w")
     of.close()
 
-def run_gsnap(input, output, params=None):
-    """Run gsnap.
+# def run_gsnap(input, output, params=None):
+#     """Run gsnap.
+    
+#     """
+
+#     pass
+
+@transform(run_rum, regex(r"(.*).sam"), r"\1.sorted.sam")
+def run_sort_sam(input, output, params=None):
+    """Set up and run the Picard SortSam program.
     
     """
+    
+    # # Let a parser argument handle setting up arguments and options
+    # parser = argparse.ArgumentParser()
+    
+    # # Add Picard arguments
+    # picard = Picard.PicardBase()
+    # parser = picard.argparse(parser)
 
-    pass
+    # Update input and output from global config object
+    picard_params = config['picard_sortsam_params']
+
+    picard_params['input'] = input
+    picard_params['output'] = output
+
+    # Set up using the default arguments, specifying the input and output files since they are required!
+    cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s --sort_order=%(sort_order)s SortSam" % picard_params
+
+    # args = parser.parse_args(cmdline.split())
+    
+    # # Run the function for collecting RNASeq metrics
+    # args.func(args)
+    
+    picard_cmd = "python -m ccrngspy.tasks.Picard %s" % cmdline
+    stdout, stderr = utils.safe_run(picard_cmd, shell=False)
+    logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+    
 
 def run_collect_rnaseq_metrics(input, output, params=None):
     """Set up and run the Picard CollectRnaSeqMetrics program.
@@ -198,7 +230,7 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     picard_params['output'] = output
     
     # Set up using the default arguments, specifying the input and output files since they are required!
-    cmdline = "CollectRnaSeqMetrics --input=%(input)s --output=%(output)s --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s --ref_flat=%(ref_flat) --ref_file=%(ref_file)" % picard_params
+    cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s  --ref_flat=%(ref_flat) --ref_file=%(ref_file) CollectRnaSeqMetrics --ribosomal_intervals=%(ribosomal_intervals)s --minimum_length=%(minimum_length)s --chart_output=%(chart_output)%s --rrna_fragment_percentage=%(rrna_fragment_percentage)s --metric_accumulation_level=%(metric_accumulation_level)s --stop_after=%(stop_after)s" % picard_params
 
     # args = parser.parse_args(cmdline.split())
     
