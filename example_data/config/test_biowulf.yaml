@@ -27,5 +27,5 @@ rum_params: {
 }
 picard_sortsam_params: {
     jar_file: /usr/local/picard/CollectRnaSeqMetrics.jar,
-    sort_order=coordinate
+    sort_order: coordinate
 }
