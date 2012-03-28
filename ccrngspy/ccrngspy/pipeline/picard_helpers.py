@@ -24,7 +24,8 @@ def make_rum_param_list(samples, config, params=None):
     log_dir = config['general_params']['log_file_dir']
     
     for sample in samples:
-        tmp = [os.path.join(fastq_dir, sample['samplename', RUM.sam]),
+        tmp = [os.path.join(fastq_dir, sample['samplename', RUM.sorted.sam]),
+               os.path.join(fastq_dir, sample['samplename', RUM.sam]),
                os.path.join(log_dir, "%s.picard.LOG" % sample['samplename']),
                params]
         
