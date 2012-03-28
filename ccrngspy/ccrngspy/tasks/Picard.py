@@ -448,7 +448,7 @@ class PicardBase():
         collectrnaseqmetricsparser.add_argument('--minimum_length', type=int, help='Minimum length [default: %(default)s]', default=500)
         collectrnaseqmetricsparser.add_argument('--chart_output', help='Output of PDF file', default=None)
         collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None)
-        collectrnaseqmetricsparser.add_argument('--rrna_fragment_precentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
+        collectrnaseqmetricsparser.add_argument('--rrna_fragment_percentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
         collectrnaseqmetricsparser.add_argument('--metric_accumulation_level', type=str, help='The level(s) at which to accumulate metrics. [default: %(default)s]',
                                                 choices=["ALL_READS", "SAMPLE", "LIBRARY", "READ_GROUP"], default="SAMPLE")
         collectrnaseqmetricsparser.add_argument('--stop_after', type=int, help='Stop after N reads [default: %(default)s]', default=0)
