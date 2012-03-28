@@ -151,7 +151,6 @@ def run_rum(input, output, params=None):
     # Update input and output from global config object
     rum_params = config['rum_params']
     rum_params['input'] = input
-    rum_params['name'] = params['rum_name']
 
     ## fastq read files
     rum_params['file1'] = input[0]
