@@ -165,6 +165,8 @@ class PicardBase():
         # stdouts = self.readLarge(templog)        
 
         cl = self.constructCL(cl=cl, output_dir=output_dir)
+
+        logger.debug("cl = %s" % cl)
         
         process = subprocess.Popen(cl, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=output_dir)
         stdouts, stderrs = process.communicate()
