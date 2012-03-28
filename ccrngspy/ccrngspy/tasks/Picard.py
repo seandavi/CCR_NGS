@@ -621,6 +621,8 @@ def collect_rnaseq_metrics(args, pic, cl):
 
     cl.append('STOP_AFTER=%i' % (args.stop_after))
 
+    cl.append('STRAND_SPECIFICITY=%i' % (args.strand_specificity))
+
     # outputs
     cl.append('OUTPUT=%s' % args.output) 
 
