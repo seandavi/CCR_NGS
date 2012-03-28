@@ -610,6 +610,7 @@ def collect_rnaseq_metrics(args, pic, cl):
     # locations of rRNA seqs in genome in interval_list format.
     if args.ribosomal_intervals:
         cl.append('RIBOSOMAL_INTERVALS=%s' % args.ribosomal_intervals)
+        cl.append('RRNA_FRAGMENT_PERCENTAGE=%d' % args.rrna_fragment_percentage)
 
     cl.append('MINIMUM_LENGTH=%i' % args.minimum_length)
 
@@ -619,7 +620,6 @@ def collect_rnaseq_metrics(args, pic, cl):
     if args.ignore_sequence:
         cl.append('IGNORE_SEQUENCE=%s' % args.ignore_sequence)
 
-    cl.append('RRNA_FRAGMENT_PERCENTAGE=%d' % args.rrna_fragment_percentage)
     cl.append('METRIC_ACCUMULATION_LEVEL=%s' % args.metric_accumulation_level)
 
     cl.append('ASSUME_SORTED=%s' % (args.assumesorted.lower()))
