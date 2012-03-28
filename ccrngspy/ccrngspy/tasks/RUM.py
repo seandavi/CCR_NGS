@@ -24,7 +24,7 @@ class RUMrunner(Task.Task):
                        threads="-t %s",
                        casava="--casava")
     
-    def __init__(self, config_file, name, input_file_list, output_directory=None, chunks=1):
+    def __init__(self, config_file=None, name=None, input_file_list=None, output_directory=None, chunks=1):
 
         self.config_file = config_file
         self.name = name
@@ -42,7 +42,7 @@ class RUMrunner(Task.Task):
         group = parser.add_argument_group("FastQC Options")
         group.add_argument("--rum_config_file", dest="rum_config_file", type=str, default=None,
                            help="RUM configuration file.")
-        group.add_argument("-o", "--rum_run_name", dest="rum_run_name", type=str, default=None,
+        group.add_argument("--rum_run_name", dest="rum_run_name", type=str, default=None,
                            help="RUM run name.")
         group.add_argument("-o", "--rum_outdir", dest="rum_output_directory", type=str, default=None,
                            help="RUM output directory.")
@@ -58,7 +58,7 @@ class RUMrunner(Task.Task):
 
         """
         
-        self.__init__(config_file=args.rum_read_files,
+        self.__init__(config_file=args.rum_config_file,
                       name=args.rum_run_name,
                       input_file_list=args.rum_read_files,
                       output_directory=args.rum_output_directory,
@@ -68,7 +68,7 @@ class RUMrunner(Task.Task):
     def make_command(self):
         _cmd_string = "%(prog)s %(config)s %(files)s %(outputdir)s %(chunks)s %(name)s"
 
-        if self.input_files:
+        if self.input_file_list and self.name and self.config_file:
             cmd = _cmd_string % dict(prog=self._cmd, config=self.config_file,
                                      files=",,,".join(self.input_file_list),
                                      outputdir=self.output_directory,
@@ -97,17 +97,17 @@ def main():
 
 def _test():
 
-    fastqc = RUMrunner()
+    rumrunner = RUMrunner()
 
     usage = "%(prog)s [options] input_files"
     parser = argparse.ArgumentParser(usage=usage)
-    parser = fastqc.argparse(parser)
+    parser = rumrunner.argparse(parser)
     
     args = parser.parse_args()
 
-    fastqc.set_options(args)
+    rumrunner.set_options(args)
     
-    fastqc.run_fastqc()
+    rumrunner.run_rum()
 
 if __name__ == "__main__":
     main()
