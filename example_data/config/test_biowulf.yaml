@@ -21,7 +21,7 @@ picard_params: {
 rum_params: {
     output_dir: /data/dailykm/CCR_NGS/test_run/rum/,
     exec: /usr/local/rum/bin/RUM_runner.pl,
-    config_file: /usr/local/rum/conf/rum.config_hg19
+    config_file: /usr/local/rum/conf/rum.config_hg19,
     threads: 3
 }
 picard_sortsam_params: {
