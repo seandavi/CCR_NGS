@@ -28,7 +28,7 @@ def make_rum_param_list(samples, config, params=None):
 
     
     for sample in samples:
-        params['sample'] = sample['samplename']
+        params = dict(sample=sample['samplename'])
     
         tmp = [[os.path.join(fastq_dir, sample['filename1']),
                 os.path.join(fastq_dir, sample['filename2'])],
