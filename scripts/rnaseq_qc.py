@@ -63,8 +63,7 @@ with open(opts.sample_file, 'r') as samplefile:
 fastqc_test_task_params = fastqc_helpers.make_fastqc_param_list(samples=samples, config=config)
 
 # setup rum specific params
-tmp_params = dict(rum_name="foo_rum_name")
-rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=config, params=tmp_params)
+rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=config, params=None)
 
 #----------------------------------------------
 # begin tasks here
@@ -159,7 +158,7 @@ def run_rum(input, output, params=None):
     rum_params['file2'] = input[1]
     rum_params['sample'] = params['sample']
     
-    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(name)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s " % rum_params
+    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s " % rum_params
     args = parser.parse_args(cmdline.split())
 
     rum.set_options(args)
