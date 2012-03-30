@@ -225,13 +225,13 @@ def run_sort_sam(input, output, params=None):
     # stdout, stderr = utils.safe_run(picard_cmd, shell=False)
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
-    job_stdout, job_stderr = utils.safe_qsub_run(picard_command, jobname="rum_%s" % params['sample'],
+    job_stdout, job_stderr = utils.safe_qsub_run(picard_cmd, jobname="rum_%s" % params['sample'],
                                                  nodes="1",
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
 
-@transform(run_sort_sam, regex(r"(.*)/(.*)/RUM.sorted.sam"), r"%s/\2.tsv" % config['picard_params']['output_dir'], dict(sample=r"\2"))
+@transform(run_sort_sam, regex(r".*/(.*)/RUM.sorted.sam"), r"%s/\2.tsv" % config['picard_params']['output_dir'], r"\2")
 def run_collect_rnaseq_metrics(input, output, params=None):
     """Set up and run the Picard CollectRnaSeqMetrics program.
     
