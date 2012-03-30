@@ -266,7 +266,7 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     # stdout, stderr = utils.safe_run(picard_cmd, shell=False)
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
 
-    job_stdout, job_stderr = utils.safe_qsub_run(picard_command, jobname="rum_%s" % sample,
+    job_stdout, job_stderr = utils.safe_qsub_run(picard_cmd, jobname="rum_%s" % sample,
                                                  nodes="1",
                                                  stdout=stdout, stderr=stderr)
     
