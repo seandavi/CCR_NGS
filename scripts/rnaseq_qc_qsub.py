@@ -23,6 +23,7 @@ from ccrngspy.tasks import Picard
 from ccrngspy.tasks import RUM
 from ccrngspy.pipeline import fastqc_helpers
 from ccrngspy.pipeline import rum_helpers
+from ccrngspy.pipeline import picard_helpers
 from ccrngspy import utils
 
 logger = utils.make_local_logger("Ruffus RNASeq QC Logger", level="debug", color=True)
@@ -215,24 +216,20 @@ def run_sort_sam(input, output, params=None):
     # Set up using the default arguments, specifying the input and output files since they are required!
     cmdline = "--jar=%(jar_file)s --input=%(input)s --output=%(output)s --sort_order=%(sort_order)s SortSam" % picard_params
 
-    # args = parser.parse_args(cmdline.split())
-    
-    # # Run the function for collecting RNASeq metrics
-    # args.func(args)
-    
     picard_cmd = "python -m ccrngspy.tasks.Picard %s" % cmdline
 
     # stdout, stderr = utils.safe_run(picard_cmd, shell=False)
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
-    job_stdout, job_stderr = utils.safe_qsub_run(picard_cmd, jobname="rum_%s" % params['sample'],
+    logger.debug("params = %s" % (params, ))
+    job_stdout, job_stderr = utils.safe_qsub_run(picard_cmd, jobname="sort_sam",
                                                  nodes="1",
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
 
-@transform(run_sort_sam, regex(r".*/(.*)/RUM.sorted.sam"), r"%s/\2.tsv" % config['picard_params']['output_dir'], r"\2")
-def run_collect_rnaseq_metrics(input, output, params=None):
+@transform(run_sort_sam, regex(r".*/(.*)/RUM.sorted.sam"), r"%s/\1.tsv" % config['picard_params']['output_dir'], r"\1")
+def run_collect_rnaseq_metrics(input, output, sample):
     """Set up and run the Picard CollectRnaSeqMetrics program.
     
     """
@@ -279,6 +276,7 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
     """
 
     metrics = []
+  
     for fn in input_files:
         metrics.extend(picard_helpers.parse_picard_rnaseq_metrics(fn))
 
@@ -289,9 +287,9 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writeheader()
         dw.writerows(metrics)
 
-job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
+job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics, run_merge_rnaseq_metrics]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list, verbose=3)
 else:
-    pipeline_run(job_list, multiprocess=6, logger=logger)
+    pipeline_run(job_list, multiprocess=10, logger=logger)
