@@ -43,7 +43,7 @@ parser.add_argument('--config_file', dest="config_file", type=str,
                     help="A YAML configuration file for pipeline.")
 
 parser.add_argument('--sample_file', dest="sample_file", type=str,
-                    help="A YAML configuration file for pipeline.")
+                    help="A tab separated file about the samples to run.")
 
 # add options for the fastqc task
 # parser = FastQC.FastQC().argparse(parser)
