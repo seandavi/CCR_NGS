@@ -231,8 +231,8 @@ def run_sort_sam(input, output, params=None):
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
 
-@transform(run_sort_sam, regex(r"(.*)/(.*)/RUM.sorted.sam"), r"%s/\2.tsv" % config['picard_params']['output_dir'], r"\2")
-def run_collect_rnaseq_metrics(input, output, sample=None):
+@transform(run_sort_sam, regex(r".*/(.*)/RUM.sorted.sam"), r"%s/\2.tsv" % config['picard_params']['output_dir'], r"\2")
+def run_collect_rnaseq_metrics(input, output, params=None):
     """Set up and run the Picard CollectRnaSeqMetrics program.
     
     """
