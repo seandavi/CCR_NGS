@@ -24,6 +24,9 @@ def make_fastqc_param_list(samples, config, params=None):
     log_dir = config['general_params']['log_file_dir']
     
     for sample in samples:
+
+        params = dict(sample=sample['samplename'])
+
         tmp1 = [os.path.join(fastq_dir, sample['filename1']),
                 os.path.join(log_dir, "%s.fastqc.LOG" % sample['filename1']),
                 params]

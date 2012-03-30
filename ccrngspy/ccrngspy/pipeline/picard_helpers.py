@@ -8,7 +8,7 @@ from ccrngspy import utils
 
 logger = utils.make_local_logger("Picard helper logging", level="debug", color="green")
 
-def make_rum_param_list(samples, config, params=None):
+def make_picard_param_list(samples, config, params=None):
     """Helper function to turn the sample file into a list of files.
 
     Needs to be a list of [[input1, input2], output, params]; for the fastqc script.
