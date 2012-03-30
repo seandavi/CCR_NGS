@@ -303,5 +303,4 @@ job_list = [run_test]
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
 else:
-    pipeline_run(job_list, multiprocess=1, logger=logger)
-
+    pipeline_run(job_list, multiprocess=6, logger=logger)
