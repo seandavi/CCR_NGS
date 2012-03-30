@@ -26,7 +26,7 @@ _script_header = """
 #!/bin/bash
 """
 
-def safe_qsub_run(cmd, jobname, script_header=_script_header, shell=False):
+def safe_qsub_run(cmd, jobname, script_header=_script_header, nodes=1, params="", stdout=None, stderr=None, shell=False):
     """Run a command via qsub in blocking mode so that the command waits to exit.
 
     Requires a header string and a job name.
@@ -37,8 +37,17 @@ def safe_qsub_run(cmd, jobname, script_header=_script_header, shell=False):
     scriptfile.write("%(header)s\n%(command)s\n" % dict(header=script_header, command=cmd))
     scriptfile.file.flush()
 
-    qsub_cmd = "qsub -N %(jobname)s -l nodes=1 -W block=true %(script)s" % dict(jobname=jobname,
-                                                                                script=scriptfile.name)
+    qsub_cmd = "qsub -N %(jobname)s -l nodes=%(nodes)s -W block=true %(params)s" % dict(jobname=jobname,
+                                                                                        nodes=nodes,
+                                                                                        params=params)
+
+    if stdout:
+        qsub_cmd += " -o %s" % stdout
+
+    if stderr:
+        qsub_cmd += " -e %s" % stderr
+    
+    qsub_cmd = "%(cmd)s %(script)s" % dict(cmd=qsub_cmd, script=scriptfile.name)
 
     proc = subprocess.Popen(qsub_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     so, se = proc.communicate()
