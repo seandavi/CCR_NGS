@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """Run the fastqc pipeline.
 
-This runs FastQC on a number of files, using qsub to submit to the cluster.
+This runs the RNAseq pipeline on a number of files, using qsub to submit to the cluster.
 
-It requires a YAML configuration file with parameters for FastQC (output directory, etc.)
-It also requires a samples file that has at least a column named 'sample' and 'filename'.
+It requires a YAML configuration file with parameters (output directory, etc.)
+
+It also requires a samples file that has at least columns:
+    'samplename', 'sample1', 'sample2', 'filename1', and 'filename2'
 
 """
 
