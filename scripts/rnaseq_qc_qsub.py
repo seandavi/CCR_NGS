@@ -128,7 +128,7 @@ def run_test(input, output, params=None):
     #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     # elif fastqc_params['run_type'] == 'local':
     job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc_%s" % params['sample'],
-                                                 nodes="%(threads)s:m1" % fastqc_params,
+                                                 nodes="%(threads)s:m1:c4" % fastqc_params,
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
