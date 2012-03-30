@@ -114,7 +114,7 @@ def run_test(input, output, params=None):
 
     # Output dir for qsub stdout and stderr
     stdout = config['general_params']['log_file_dir']
-    stderr = config['general_params']['log_file_dir'])
+    stderr = config['general_params']['log_file_dir']
     
     cmdline = "--outdir=%(output_dir)s --threads=%(threads)s %(input)s" % fastqc_params
 
