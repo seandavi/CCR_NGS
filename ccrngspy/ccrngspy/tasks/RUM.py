@@ -24,7 +24,7 @@ class RUMrunner(Task.Task):
                        threads="-t %s",
                        casava="--casava")
     
-    def __init__(self, config_file=None, name=None, input_file_list=None, output_directory=None, chunks=1):
+    def __init__(self, config_file=None, name=None, input_file_list=None, output_directory=None, chunks=1, ram=6):
 
         self.config_file = config_file
         self.name = name
@@ -33,7 +33,8 @@ class RUMrunner(Task.Task):
         
         self.output_directory = output_directory
         self.chunks = chunks
-
+        self.ram = ram
+        
     def argparse(self, parser):
         """Add RUM option group to an OptionParser.
         
@@ -48,6 +49,8 @@ class RUMrunner(Task.Task):
                            help="RUM output directory.")
         group.add_argument("--rum_chunks", dest="rum_chunks", type=int, default=1,
                            help="Specifies the number of chunks for RUM.")
+        group.add_argument("--rum_ram", dest="rum_ram", type=int, default=1,
+                           help="Specifies the amount of ram per chunk.")
         group.add_argument("--rum_read_files", type=str, nargs="+",
                            help="Input fastq files to RUM.")
         
@@ -62,17 +65,19 @@ class RUMrunner(Task.Task):
                       name=args.rum_run_name,
                       input_file_list=args.rum_read_files,
                       output_directory=args.rum_output_directory,
-                      chunks=args.rum_chunks)
+                      chunks=args.rum_chunks,
+                      ram=args.rum_ram)
 
 
     def make_command(self):
-        _cmd_string = "%(prog)s %(config)s %(files)s %(outputdir)s %(chunks)s %(name)s"
+        _cmd_string = "%(prog)s %(config)s %(files)s %(outputdir)s %(chunks)s %(name)s -ram %(ram)s"
 
         if self.input_file_list and self.name and self.config_file:
             cmd = _cmd_string % dict(prog=self._cmd, config=self.config_file,
                                      files=",,,".join(self.input_file_list),
                                      outputdir=self.output_directory,
                                      chunks=self.chunks,
+                                     ram=self.ram,
                                      name=self.name)
         else:
             raise ValueError("Did not specify any input files!")
