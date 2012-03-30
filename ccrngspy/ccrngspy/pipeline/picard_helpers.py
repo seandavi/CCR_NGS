@@ -32,3 +32,53 @@ def make_rum_param_list(samples, config, params=None):
         final_list.append(tmp)
 
     return final_list
+
+class PicardCollectRNASeqMetricsFile(object):
+    """Class for Picard CollectRNASeqMetrics output.
+    
+    Skips comments and blank lines.
+    
+    """
+    
+    def __init__(self, f):
+        self.f = f
+
+    def next(self):
+        """Skip comment and blank lines.
+
+        """
+
+        line = next(self.f) #.next()
+
+        while line.startswith("#") or not line.strip(): #line.startswith("\n"):
+            line = next(self.f) #.next()
+        return line
+
+    def __iter__(self):
+        return self
+
+class PicardCollectRNASeqMetricsFile2(file):
+    """Class for Picard CollectRNASeqMetrics output.
+    
+    Skips comments and blank lines.
+    
+    """
+    
+    def next(self):
+        """Skip comment and blank lines.
+
+        """
+
+        line = next(self) #.next()
+
+        while line.startswith("#") or not line.strip(): #line.startswith("\n"):
+            line = next(self) #.next()
+        return line
+
+    # def __iter__(self):
+    #     return self
+
+def parse_picard_rnaseq_metrics(dictreader):
+    pass
+    
+    
