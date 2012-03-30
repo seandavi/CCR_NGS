@@ -89,10 +89,10 @@ def run_mk_output_dir(input=None, output=None, params=None):
             sample_output_dir = os.path.join(config['rum_params']['output_dir'], sample['samplename'])
             os.mkdir(sample_output_dir)
 
-        # Make picard output directory for each sample
-        for sample in samples:
-            sample_output_dir = os.path.join(config['picard_params']['output_dir'], sample['samplename'])
-            os.mkdir(sample_output_dir)
+        # # Make picard output directory for each sample
+        # for sample in samples:
+        #     sample_output_dir = os.path.join(config['picard_params']['output_dir'], sample['samplename'])
+        #     os.mkdir(sample_output_dir)
             
 @follows(run_mk_output_dir)
 @files(fastqc_test_task_params)
@@ -167,9 +167,6 @@ def run_rum(input, output, params=None):
     stdout, stderr = utils.safe_run(rum_command, shell=False)
     logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
-    # post task, touch output file!
-    of = file(output, mode="w")
-    of.close()
 
 # def run_gsnap(input, output, params=None):
 #     """Run gsnap.
@@ -240,13 +237,9 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     stdout, stderr = utils.safe_run(picard_cmd, shell=False)
     logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
-    # post task, touch output file!
-    of = file(output, mode="w")
-    of.close()
 
-
-# job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
-job_list = [run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
+job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
+# job_list = [run_sort_sam, run_collect_rnaseq_metrics]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
