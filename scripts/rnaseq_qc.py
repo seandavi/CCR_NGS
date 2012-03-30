@@ -238,7 +238,7 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
 @merge(run_collect_rnaseq_metrics, os.path.join(config["picard_params"]["output_dir"], "CollectRNASeqMetrics.tsv"))
-def merge_rnaseq_metrics(input_files, summary_file):
+def run_merge_rnaseq_metrics(input_files, summary_file):
     """Merge the outputs of collectrnaseqmetrics into one file.
 
     """
@@ -254,8 +254,8 @@ def merge_rnaseq_metrics(input_files, summary_file):
         dw.writeheader()
         dw.writerows(metrics)
 
-job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
-# job_list = [run_sort_sam, run_collect_rnaseq_metrics]
+# job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
+job_list = [run_merge_rnaseq_metrics]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
