@@ -37,6 +37,8 @@ class PicardCollectRNASeqMetricsFile(object):
     """Class for Picard CollectRNASeqMetrics output.
     
     Skips comments and blank lines.
+
+    Solution from http://bugs.python.org/msg48505.
     
     """
     
@@ -57,28 +59,14 @@ class PicardCollectRNASeqMetricsFile(object):
     def __iter__(self):
         return self
 
-class PicardCollectRNASeqMetricsFile2(file):
-    """Class for Picard CollectRNASeqMetrics output.
-    
-    Skips comments and blank lines.
-    
+
+def parse_picard_rnaseq_metrics(fn):
+    """Parse CollectRNASeqMetrics file to a list of dicts.
+
     """
     
-    def next(self):
-        """Skip comment and blank lines.
-
-        """
-
-        line = next(self) #.next()
-
-        while line.startswith("#") or not line.strip(): #line.startswith("\n"):
-            line = next(self) #.next()
-        return line
-
-    # def __iter__(self):
-    #     return self
-
-def parse_picard_rnaseq_metrics(dictreader):
-    pass
+    f = PicardCollectRNASeqMetricsFile(file(fn))
+    dr = csv.DictReader(f, delimiter="\t")
+    return list(dr), dr.fieldnames
     
-    
+
