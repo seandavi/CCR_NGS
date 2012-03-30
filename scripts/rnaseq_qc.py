@@ -244,6 +244,13 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     of = file(output, mode="w")
     of.close()
 
+@merge(run_collect_rnaseq_metrics, os.path.join(config["picard_params"]["output_dir"], "CollectRNASeqMetrics.tsv"))
+def merge_rnaseq_metrics(input_files, summary_file):
+
+    for fn in input_files:
+        
+    
+    pass
 
 # job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
 job_list = [run_fastqc, run_rum, run_sort_sam]#, run_collect_rnaseq_metrics]
