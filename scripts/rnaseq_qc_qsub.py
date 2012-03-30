@@ -268,7 +268,7 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writerows(metrics)
 
 # job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
-job_list = [run_test, run_fastqc, run_rum]
+job_list = [run_fastqc, run_rum]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
