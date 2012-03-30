@@ -21,10 +21,6 @@ class FastQC(Task.Task):
     
     _cmd = "fastqc"
     
-    _opt_lookup = dict(output_directory="-o %s",
-                       threads="-t %s",
-                       casava="--casava")
-    
     def __init__(self, input_files=None, output_directory=None, threads=1, casava=False):
         self.input_files = input_files
         self.output_directory = output_directory
