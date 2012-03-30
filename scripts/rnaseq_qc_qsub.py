@@ -107,7 +107,7 @@ def run_fastqc(input, output, params=None):
     # Let a parser argument handle setting up arguments and options
     parser = argparse.ArgumentParser()
     
-    # Add Picard arguments
+    # Add FastQC arguments
     fastqc = FastQC.FastQC()
     parser = fastqc.argparse(parser)
     
@@ -150,7 +150,7 @@ def run_rum(input, output, params=None):
     # Let a parser argument handle setting up arguments and options
     parser = argparse.ArgumentParser()
     
-    # Add Picard arguments
+    # Add RUM arguments
     rum = RUM.RUMrunner()
     parser = rum.argparse(parser)
     
@@ -194,6 +194,14 @@ def run_rum(input, output, params=None):
 @transform(run_rum, regex(r"(.*).sam"), r"\1.sorted.sam")
 def run_sort_sam(input, output, params=None):
     """Set up and run the Picard SortSam program.
+
+    This task works differently than the others; instead of calling the program directly
+    by writing out the command line string needed to run it, this runs a python script
+    by calling the main function of ccrngspy.tasks.Picard. This is because the Picard code
+    is based off of the Galaxy wrapper for Picard, and doesn't work exactly the same as the
+    rest.
+
+    2012-03-30 I will consider re-writing it so that it is consistent. (KD))
     
     """
     
@@ -233,16 +241,20 @@ def run_sort_sam(input, output, params=None):
 @transform(run_sort_sam, regex(r".*/(.*)/RUM.sorted.sam"), r"%s/\1.tsv" % config['picard_params']['output_dir'], r"\1")
 def run_collect_rnaseq_metrics(input, output, sample):
     """Set up and run the Picard CollectRnaSeqMetrics program.
-    
+
+    This task works differently than the others; instead of calling the program directly
+    by writing out the command line string needed to run it, this runs a python script
+    by calling the main function of ccrngspy.tasks.Picard. This is because the Picard code
+    is based off of the Galaxy wrapper for Picard, and doesn't work exactly the same as the
+    rest.
+
+    2012-03-30 I will consider re-writing it so that it is consistent. (KD))
+
     """
     
     # # Let a parser argument handle setting up arguments and options
     # parser = argparse.ArgumentParser()
     
-    # # Add Picard arguments
-    # picard = Picard.PicardBase()
-    # parser = picard.argparse(parser)
-
     # Output dir for qsub stdout and stderr
     stdout = config['general_params']['log_file_dir']
     stderr = config['general_params']['log_file_dir']
