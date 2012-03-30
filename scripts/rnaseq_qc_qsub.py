@@ -244,6 +244,10 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     # picard = Picard.PicardBase()
     # parser = picard.argparse(parser)
 
+    # Output dir for qsub stdout and stderr
+    stdout = config['general_params']['log_file_dir']
+    stderr = config['general_params']['log_file_dir']
+
     # Update input and output from global config object
     picard_params = config['picard_params']
     picard_params['input'] = input
@@ -258,9 +262,16 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     # args.func(args)
     
     picard_cmd = "python -m ccrngspy.tasks.Picard %s" % cmdline
-    stdout, stderr = utils.safe_run(picard_cmd, shell=False)
-    logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+
+    # stdout, stderr = utils.safe_run(picard_cmd, shell=False)
+    # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+
+    job_stdout, job_stderr = utils.safe_qsub_run(picard_command, jobname="rum_%s" % params['sample'],
+                                                 nodes="1",
+                                                 stdout=stdout, stderr=stderr)
     
+    logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
+
 @merge(run_collect_rnaseq_metrics, os.path.join(config["picard_params"]["output_dir"], "CollectRNASeqMetrics.tsv"))
 def run_merge_rnaseq_metrics(input_files, summary_file):
     """Merge the outputs of collectrnaseqmetrics into one file.
