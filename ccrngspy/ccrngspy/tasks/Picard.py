@@ -415,7 +415,7 @@ class PicardBase():
         parser.add_argument('-n', '--title', default="Pick a Picard Tool", type=str)
         parser.add_argument('-t', '--htmlout', default=None)
         parser.add_argument('-d', '--outdir', default=None)
-        parser.add_argument('-x', '--maxjheap', default='4g')
+        parser.add_argument('-x', '--maxjheap', default='2g')
         parser.add_argument('-b', '--bisulphite', default='false')
         parser.add_argument('--sort_order', dest='sort_order', help='Sort order', default="coordinate", choices=["unsorted", "queryname", "coordinate"])
         parser.add_argument('--tmpdir', default='/tmp')
