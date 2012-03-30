@@ -136,11 +136,11 @@ def run_test(input, output, params=None):
     # post task, touch output file!
     of = file(output, mode="w")
     of.close()
-    
+
 @follows(run_mk_output_dir)
 @files(fastqc_test_task_params)
-def run_fastqc(input, output, params=None):
-    """Set up and run the fastqc program.
+def run_test(input, output, params=None):
+    """Set up and run fastqc.
     
     """
 
@@ -150,30 +150,31 @@ def run_fastqc(input, output, params=None):
     # Add Picard arguments
     fastqc = FastQC.FastQC()
     parser = fastqc.argparse(parser)
-
     
     # Update input and output from global config object
     fastqc_params = config['fastqc_params']
     fastqc_params['input'] = input
 
+    # Output dir for qsub stdout and stderr
+    stdout = config['general_params']['log_file_dir']
+    stderr = config['general_params']['log_file_dir']
+    
     cmdline = "--outdir=%(output_dir)s --threads=%(threads)s %(input)s" % fastqc_params
 
     args = parser.parse_args(cmdline.split())
-
-
     fastqc.set_options(args)
-    
-    # fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
-    fastqc_command = fastqc.make_command()
 
+    # Final command to run
+    fastqc_command = fastqc.make_command()
+    
     # if fastqc_params['run_type'] == 'remote':
     #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     # elif fastqc_params['run_type'] == 'local':
     job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc_%s" % params['sample'],
                                                  nodes="1:m1:c2",
                                                  stdout=stdout, stderr=stderr)
-
-    logger.debug("stdout = %s, stderr = %s" % (stdout, stderr))
+    
+    logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
 
     # post task, touch output file!
     of = file(output, mode="w")
