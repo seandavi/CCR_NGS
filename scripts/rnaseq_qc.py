@@ -239,11 +239,20 @@ def run_collect_rnaseq_metrics(input, output, params=None):
     
 @merge(run_collect_rnaseq_metrics, os.path.join(config["picard_params"]["output_dir"], "CollectRNASeqMetrics.tsv"))
 def merge_rnaseq_metrics(input_files, summary_file):
+    """Merge the outputs of collectrnaseqmetrics into one file.
 
+    """
+
+    metrics = []
     for fn in input_files:
-        
+        metrics.extend(picard_helpers.parse_picard_rnaseq_metrics(fn))
+
+    fieldnames = metrics[0].keys())
     
-    pass
+    with open(summary_file, 'w') as fou:
+        dw = csv.DictWriter(fou, delimiter='\t', fieldnames=fieldnames)
+        dw.writeheader()
+        dw.writerows(metrics)
 
 job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
 # job_list = [run_sort_sam, run_collect_rnaseq_metrics]
