@@ -96,49 +96,6 @@ def run_mk_output_dir(input=None, output=None, params=None):
 
 @follows(run_mk_output_dir)
 @files(fastqc_test_task_params)
-def run_test(input, output, params=None):
-    """Set up and run a TEST program to make sure its actually working!
-    
-    """
-
-    # Let a parser argument handle setting up arguments and options
-    parser = argparse.ArgumentParser()
-    
-    # Add Picard arguments
-    fastqc = FastQC.FastQC()
-    parser = fastqc.argparse(parser)
-    
-    # Update input and output from global config object
-    fastqc_params = config['fastqc_params']
-    fastqc_params['input'] = input
-
-    # Output dir for qsub stdout and stderr
-    stdout = config['general_params']['log_file_dir']
-    stderr = config['general_params']['log_file_dir']
-    
-    cmdline = "--outdir=%(output_dir)s --threads=%(threads)s %(input)s" % fastqc_params
-
-    args = parser.parse_args(cmdline.split())
-    fastqc.set_options(args)
-
-    # Final command to run
-    fastqc_command = "echo %s" % fastqc.make_command()
-    
-    # if fastqc_params['run_type'] == 'remote':
-    #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
-    # elif fastqc_params['run_type'] == 'local':
-    job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="test_%s" % params['sample'],
-                                                 nodes="1:m1:c2",
-                                                 stdout=stdout, stderr=stderr)
-    
-    logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
-
-    # post task, touch output file!
-    of = file(output, mode="w")
-    of.close()
-
-@follows(run_mk_output_dir)
-@files(fastqc_test_task_params)
 def run_fastqc(input, output, params=None):
     """Set up and run fastqc.
     
@@ -170,7 +127,7 @@ def run_fastqc(input, output, params=None):
     # if fastqc_params['run_type'] == 'remote':
     #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     # elif fastqc_params['run_type'] == 'local':
-    job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc_%s" % params['sample'],
+    job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc",
                                                  nodes="1:m1:c2",
                                                  stdout=stdout, stderr=stderr)
     
@@ -198,21 +155,31 @@ def run_rum(input, output, params=None):
     rum_params = config['rum_params']
     rum_params['input'] = input
 
+    # Output dir for qsub stdout and stderr
+    stdout = config['general_params']['log_file_dir']
+    stderr = config['general_params']['log_file_dir']
+
     ## fastq read files
     rum_params['file1'] = input[0]
     rum_params['file2'] = input[1]
     rum_params['sample'] = params['sample']
     
-    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s " % rum_params
+    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s --rum_chunks=%(chunks)s --rum_ram=4" % rum_params
     args = parser.parse_args(cmdline.split())
 
     rum.set_options(args)
     
     rum_command = rum.make_command()
 
-    stdout, stderr = utils.safe_run(rum_command, shell=False)
-    logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+    # stdout, stderr = utils.safe_run(rum_command, shell=False)
+    # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+
+    job_stdout, job_stderr = utils.safe_qsub_run(rum_command, jobname="rum_%s" % params['sample'],
+                                                 nodes="1:m4:c2",
+                                                 stdout=stdout, stderr=stderr)
     
+    logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
+
 
 # def run_gsnap(input, output, params=None):
 #     """Run gsnap.
@@ -301,7 +268,7 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writerows(metrics)
 
 # job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
-job_list = [run_test, run_fastqc]
+job_list = [run_test, run_fastqc, run_rum]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
