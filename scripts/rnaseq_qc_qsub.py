@@ -127,7 +127,7 @@ def run_test(input, output, params=None):
     # if fastqc_params['run_type'] == 'remote':
     #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     # elif fastqc_params['run_type'] == 'local':
-    job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc_%s" % params['sample'],
+    job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="test_%s" % params['sample'],
                                                  nodes="1:m1:c2",
                                                  stdout=stdout, stderr=stderr)
     
@@ -169,7 +169,9 @@ def run_fastqc(input, output, params=None):
     # if fastqc_params['run_type'] == 'remote':
     #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     # elif fastqc_params['run_type'] == 'local':
-    stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc_%s" % params['sample'], nodes="4:m1")
+    job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc_%s" % params['sample'],
+                                                 nodes="1:m1:c2",
+                                                 stdout=stdout, stderr=stderr)
 
     logger.debug("stdout = %s, stderr = %s" % (stdout, stderr))
 
@@ -298,7 +300,7 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writerows(metrics)
 
 # job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
-job_list = [run_test]
+job_list = [run_test, run_fastqc]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
