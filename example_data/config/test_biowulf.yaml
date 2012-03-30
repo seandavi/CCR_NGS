@@ -5,7 +5,7 @@ general_params: {
 }
 fastqc_params: {
     output_dir: /data/dailykm/CCR_NGS/test_run/fastqc/,
-    threads: 4
+    threads: 2
 }
 picard_params: {
     minimum_length: 500,
