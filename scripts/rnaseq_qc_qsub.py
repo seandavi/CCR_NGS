@@ -139,7 +139,7 @@ def run_test(input, output, params=None):
 
 @follows(run_mk_output_dir)
 @files(fastqc_test_task_params)
-def run_test(input, output, params=None):
+def run_fastqc(input, output, params=None):
     """Set up and run fastqc.
     
     """
