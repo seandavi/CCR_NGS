@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Run the fastqc pipeline.
+"""Run the RNAseq pipeline.
 
 This runs the RNAseq pipeline on a number of files, using qsub to submit to the cluster.
 
