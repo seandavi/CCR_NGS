@@ -201,6 +201,10 @@ def run_sort_sam(input, output, params=None):
     # picard = Picard.PicardBase()
     # parser = picard.argparse(parser)
 
+    # Output dir for qsub stdout and stderr
+    stdout = config['general_params']['log_file_dir']
+    stderr = config['general_params']['log_file_dir']
+
     # Update input and output from global config object
     picard_params = config['picard_sortsam_params']
 
@@ -217,9 +221,16 @@ def run_sort_sam(input, output, params=None):
     # args.func(args)
     
     picard_cmd = "python -m ccrngspy.tasks.Picard %s" % cmdline
-    stdout, stderr = utils.safe_run(picard_cmd, shell=False)
-    logger.debug("stdout = %s, err = %s" % (stdout, stderr))
+
+    # stdout, stderr = utils.safe_run(picard_cmd, shell=False)
+    # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
     
+    job_stdout, job_stderr = utils.safe_qsub_run(picard_command, jobname="rum_%s" % params['sample'],
+                                                 nodes="1",
+                                                 stdout=stdout, stderr=stderr)
+    
+    logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
+
 @transform(run_sort_sam, regex(r"(.*)/(.*)/RUM.sorted.sam"), r"%s/\2.tsv" % config['picard_params']['output_dir'], dict(sample=r"\2"))
 def run_collect_rnaseq_metrics(input, output, params=None):
     """Set up and run the Picard CollectRnaSeqMetrics program.
@@ -267,8 +278,7 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writeheader()
         dw.writerows(metrics)
 
-# job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
-job_list = [run_fastqc, run_rum]
+job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list)
