@@ -3,6 +3,7 @@
 """
 
 import os
+import csv
 
 from ccrngspy import utils
 
@@ -67,6 +68,6 @@ def parse_picard_rnaseq_metrics(fn):
     
     f = PicardCollectRNASeqMetricsFile(file(fn))
     dr = csv.DictReader(f, delimiter="\t")
-    return list(dr), dr.fieldnames
+    return list(dr)
     
 
