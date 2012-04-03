@@ -131,7 +131,7 @@ def run_fastqc(input, output, params=None):
     #     stdout, stderr = utils.safe_qsub_run(fastqc_command, jobname="run_fastqc")
     # elif fastqc_params['run_type'] == 'local':
     job_stdout, job_stderr = utils.safe_qsub_run(fastqc_command, jobname="fastqc",
-                                                 nodes="1:m1:c2",
+                                                 nodes=fastqc_params['qsub_nodes'],
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
@@ -167,7 +167,7 @@ def run_rum(input, output, params=None):
     rum_params['file2'] = input[1]
     rum_params['sample'] = params['sample']
     
-    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s --rum_chunks=%(chunks)s --rum_ram=4" % rum_params
+    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s --rum_chunks=%(chunks)s --rum_ram=%(ram_per_chunk)s" % rum_params
     args = parser.parse_args(cmdline.split())
 
     rum.set_options(args)
@@ -178,7 +178,7 @@ def run_rum(input, output, params=None):
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
 
     job_stdout, job_stderr = utils.safe_qsub_run(rum_command, jobname="rum_%s" % params['sample'],
-                                                 nodes="1:m4:c2",
+                                                 nodes=rum_params['qsub_nodes'], params="-l walltime=36:00:00",
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
@@ -233,7 +233,7 @@ def run_sort_sam(input, output, params=None):
     
     logger.debug("params = %s" % (params, ))
     job_stdout, job_stderr = utils.safe_qsub_run(picard_cmd, jobname="sort_sam",
-                                                 nodes="1",
+                                                 nodes=picard_params['qsub_nodes'],
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
@@ -278,7 +278,7 @@ def run_collect_rnaseq_metrics(input, output, sample):
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
 
     job_stdout, job_stderr = utils.safe_qsub_run(picard_cmd, jobname="rum_%s" % sample,
-                                                 nodes="1",
+                                                 nodes=picard_params['qsub_nodes'],
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
@@ -301,9 +301,11 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writeheader()
         dw.writerows(metrics)
 
+job_list_runfast = [run_setup_dir, run_mk_output_dir, run_fastqc]
 job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics, run_merge_rnaseq_metrics]
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list, verbose=3)
 else:
-    pipeline_run(job_list, multiprocess=10, logger=logger)
+    pipeline_run(job_list_runfast, multiprocess=20, logger=logger)
+    pipeline_run(job_list, multiprocess=2, logger=logger)
