@@ -8,7 +8,7 @@ Example Run
 -----------
 First, an example command line run of the pipeline:
 
-scripts/./rnaseq_qc.py --config_file=example_data/config/test.yaml --sample_file=example_data/config/test.tsv
+scripts/./rnaseq_qc_qsub.py --config_file=example_data/config/test.yaml --sample_file=example_data/config/test.tsv
 
 Input Files
 -----------
