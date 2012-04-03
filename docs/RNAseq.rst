@@ -4,11 +4,19 @@ Our goals with RNA-seq data analysis are manifold.  In general, we want to pipel
 
 We are going to need a "public space" for storing genomes and transcripts.  I typically create a "public" folder just for this type of thing.  
 
+Example Run
+-----------
+First, an example command line run of the pipeline:
+
+scripts/./rnaseq_qc.py --config_file=example_data/config/test.yaml --sample_file=example_data/config/test.tsv
+
 Input Files
 -----------
 The basic set of input files includes the FASTQ file(s) for each
 sample, a tab-separated file with the sample names and file names, and
 a YAML-formatted configuration file.
+
+For examples, see the example_data/config/ folder.
 
 Quality Control
 ---------------
@@ -38,6 +46,10 @@ The REQUIRED input files are:
 
 1. A sorted FASTQ file (or two sorted FASTQ files for paired end) of reads to align.
 2. A RUM config file (if running on Biowulf, these files are already available for the majority of model organisms)
+3. A sample name
+4. Number of chunks (see RUM documentation for more information on chunking)
+5. Amount of RAM to use per chunk (again, see RUM documentation for information)
+
 
 Picard
 ======
