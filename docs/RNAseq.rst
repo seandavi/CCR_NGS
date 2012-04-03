@@ -24,6 +24,21 @@ configuration file.
 
 The output directory must be set in the configuration file.
 
+Alignment
+---------
+
+We will then align the sequencing reads to the genome (and transcriptome).
+Our current options for alignment include GSNAP (ongoing implementation) and RUM (completed implementation).
+
+RUM
+===
+
+The RNAseq Unified Mapper (RUM) has been implemented in the pipeline.
+The REQUIRED input files are:
+
+1. A sorted FASTQ file (or two sorted FASTQ files for paired end) of reads to align.
+2. A RUM config file (if running on Biowulf, these files are already available for the majority of model organisms)
+
 Picard
 ======
 We will use the Picard sub-program CollectRnaSeqMetrics to get further QC information:
@@ -33,7 +48,7 @@ http://picard.sourceforge.net/command-line-overview.shtml#CollectRnaSeqMetrics
 The REQUIRED input files for this are:
 1. SAM/BAM alignment files for each sample
 2. a refFlat formatted file of gene annotations (http://genome.ucsc.edu/goldenPath/gbdDescriptionsOld.html#RefFlat). An example of this file can be downloaded using a script found in the example_data/picard/ directory.
-
+3. a FASTA formatted genome sequence file. If running on Biowulf, these files are already available and do not need to be downloaded.
 All parameters besides the SAM/BAM input alignment files should be specified in the YAML config file.
 
 
