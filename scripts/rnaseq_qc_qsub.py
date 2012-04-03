@@ -175,7 +175,7 @@ def run_rum(input, output, params=None):
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
 
     job_stdout, job_stderr = utils.safe_qsub_run(rum_command, jobname="rum_%s" % params['sample'],
-                                                 nodes=rum_params['qsub_nodes'], params="-l walltime=36:00:00",
+                                                 nodes=rum_params['qsub_nodes'], params="-l walltime=200:00:00",
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
@@ -300,6 +300,7 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
 
 job_list_runfast = [run_setup_dir, run_mk_output_dir, run_fastqc]
 job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics, run_merge_rnaseq_metrics]
+
 
 if opts.print_only:
     pipeline_printout(sys.stdout, job_list, verbose=3)
