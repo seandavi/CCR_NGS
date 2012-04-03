@@ -77,25 +77,25 @@ rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=c
          mkdir(config['rum_params']['output_dir']),
          mkdir(config['picard_params']['output_dir']))
 def run_setup_dir(input=None, output=None, params=None):
+    """Make high level output directories.
+
+    """
+    
     pass
 
 @follows(run_setup_dir)
 def run_mk_output_dir(input=None, output=None, params=None):
+    """Make output directories for each sample.
+
+    2012-03-30 Would be better if this was in a mkdir decorator, but not sure how. (KD)
+    
+    """
+    
     if not opts.no_create_output_dir:
-        # # Make output directories for each task
-        # os.mkdir(config['fastqc_params']['output_dir'])
-        # os.mkdir(config['rum_params']['output_dir'])
-        # os.mkdir(config['picard_params']['output_dir'])
-        
         # Make RUM output directory for each sample
         for sample in samples:
             sample_output_dir = os.path.join(config['rum_params']['output_dir'], sample['samplename'])
             os.mkdir(sample_output_dir)
-
-        # # Make picard output directory for each sample
-        # for sample in samples:
-        #     sample_output_dir = os.path.join(config['picard_params']['output_dir'], sample['samplename'])
-        #     os.mkdir(sample_output_dir)
 
 @follows(run_mk_output_dir)
 @files(fastqc_test_task_params)
@@ -201,7 +201,7 @@ def run_sort_sam(input, output, params=None):
     is based off of the Galaxy wrapper for Picard, and doesn't work exactly the same as the
     rest.
 
-    2012-03-30 I will consider re-writing it so that it is consistent. (KD))
+    2012-03-30 I will consider re-writing it so that it is consistent. (KD)
     
     """
     
