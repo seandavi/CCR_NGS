@@ -32,20 +32,17 @@ logger = utils.make_local_logger("Ruffus RNASeq QC Logger", level="debug", color
 
 parser = argparse.ArgumentParser(description="Run fastqc on files.")
 
-parser.add_argument("--print_only", dest="print_only", action="store_true", default=False,
-                    help="Don't run the pipeline, just print what will be run.")
-
-parser.add_argument("--no_log_dir", dest="no_create_log_dir", action="store_true", default=False,
-                    help="Don't recreate the output log dir.")
-
-parser.add_argument("--no_output_dir", dest="no_create_output_dir", action="store_true", default=False,
-                    help="Don't recreate the output dirs.")
-
 parser.add_argument('--config_file', dest="config_file", type=str,
                     help="A YAML configuration file for pipeline.")
 
 parser.add_argument('--sample_file', dest="sample_file", type=str,
                     help="A tab separated file about the samples to run.")
+
+parser.add_argument("--print_only", dest="print_only", action="store_true", default=False,
+                    help="Don't run the pipeline, just print what will be run.")
+
+parser.add_argument("--no_output_dir", dest="no_create_output_dir", action="store_true", default=False,
+                    help="Don't recreate the output dirs.")
 
 # add options for the fastqc task
 # parser = FastQC.FastQC().argparse(parser)
