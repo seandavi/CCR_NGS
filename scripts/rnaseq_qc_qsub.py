@@ -165,7 +165,7 @@ def run_rum(input, output, params=None):
     rum_params['file2'] = input[1]
     rum_params['sample'] = params['sample']
     
-    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s --rum_chunks=%(chunks)s --rum_ram=4" % rum_params
+    cmdline = "--rum_config_file=%(config_file)s --rum_run_name=%(sample)s --rum_outdir=%(output_dir)s/%(sample)s --rum_read_files %(file1)s %(file2)s --rum_chunks=%(chunks)s --rum_ram=%(ram_per_chunk)s" % rum_params
     args = parser.parse_args(cmdline.split())
 
     rum.set_options(args)
@@ -176,7 +176,7 @@ def run_rum(input, output, params=None):
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
 
     job_stdout, job_stderr = utils.safe_qsub_run(rum_command, jobname="rum_%s" % params['sample'],
-                                                 nodes=rum_params['qsub_nodes'],
+                                                 nodes=rum_params['qsub_nodes'], params="-l walltime=36:00:00",
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
