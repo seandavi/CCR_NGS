@@ -21,17 +21,17 @@ def make_fastqc_param_list(samples, config, params=None):
     final_list = []
 
     fastq_dir = config['general_params']['fastq_input_dir']
-    log_dir = config['general_params']['log_file_dir']
+    output_dir = config['fastqc_params']['output_dir']
     
     for sample in samples:
 
         params = dict(sample=sample['samplename'])
 
         tmp1 = [os.path.join(fastq_dir, sample['filename1']),
-                os.path.join(log_dir, "%s.fastqc.LOG" % sample['filename1']),
+                os.path.join(output_dir, "%s_fastqc.zip" % sample['sample1']),
                 params]
         tmp2 = [os.path.join(fastq_dir, sample['filename2']),
-                os.path.join(log_dir, "%s.fastqc.LOG" % sample['filename2']),
+                os.path.join(output_dir, "%s_fastqc.zip" % sample['sample2']),
                 params]
         
         final_list.extend([tmp1, tmp2])
