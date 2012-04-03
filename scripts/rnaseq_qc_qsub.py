@@ -60,10 +60,10 @@ with open(opts.sample_file, 'r') as samplefile:
     samples = list(reader)
 
 # setup fastqc specific params
-fastqc_test_task_params = fastqc_helpers.make_fastqc_param_list(samples=samples, config=config)
+fastqc_task_params = fastqc_helpers.make_fastqc_param_list(samples=samples, config=config)
 
 # setup rum specific params
-rum_test_task_params = rum_helpers.make_rum_param_list(samples=samples, config=config, params=None)
+rum_task_params = rum_helpers.make_rum_param_list(samples=samples, config=config, params=None)
 
 #----------------------------------------------
 # begin tasks here
@@ -95,7 +95,7 @@ def run_mk_output_dir(input=None, output=None, params=None):
             os.mkdir(sample_output_dir)
 
 @follows(run_mk_output_dir)
-@files(fastqc_test_task_params)
+@files(fastqc_task_params)
 def run_fastqc(input, output, params=None):
     """Set up and run fastqc.
     
@@ -138,7 +138,7 @@ def run_fastqc(input, output, params=None):
     of.close()
 
 @follows(run_mk_output_dir)
-@files(rum_test_task_params)
+@files(rum_task_params)
 def run_rum(input, output, params=None):
     """Run RUM on paired reads.
     
