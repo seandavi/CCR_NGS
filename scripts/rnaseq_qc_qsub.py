@@ -16,6 +16,7 @@ import sys
 import os
 import argparse
 import subprocess
+import time
 
 from ruffus import *
 import yaml
@@ -69,18 +70,22 @@ rum_task_params = rum_helpers.make_rum_param_list(samples=samples, config=config
 # begin tasks here
 #----------------------------------------------
 
+# @follows(mkdir(config['general_params']['log_file_dir']),
+#          mkdir(config['fastqc_params']['output_dir']),
+#          mkdir(config['rum_params']['output_dir']),
+#          mkdir(config['picard_params']['output_dir']))
+# def run_setup_dir(input=None, output=None, params=None):
+#     """Make high level output directories.
+
+#     """
+    
+#     pass
+
+# @follows(run_setup_dir)
 @follows(mkdir(config['general_params']['log_file_dir']),
          mkdir(config['fastqc_params']['output_dir']),
          mkdir(config['rum_params']['output_dir']),
          mkdir(config['picard_params']['output_dir']))
-def run_setup_dir(input=None, output=None, params=None):
-    """Make high level output directories.
-
-    """
-    
-    pass
-
-@follows(run_setup_dir)
 def run_mk_output_dir(input=None, output=None, params=None):
     """Make output directories for each sample.
 
@@ -175,7 +180,7 @@ def run_rum(input, output, params=None):
     # logger.debug("stdout = %s, err = %s" % (stdout, stderr))
 
     job_stdout, job_stderr = utils.safe_qsub_run(rum_command, jobname="rum_%s" % params['sample'],
-                                                 nodes=rum_params['qsub_nodes'], params="-l walltime=200:00:00",
+                                                 nodes=rum_params['qsub_nodes'], params="-l walltime=168:00:00",
                                                  stdout=stdout, stderr=stderr)
     
     logger.debug("stdout = %s, stderr = %s" % (job_stdout, job_stderr))
@@ -198,7 +203,7 @@ def run_sort_sam(input, output, params=None):
     is based off of the Galaxy wrapper for Picard, and doesn't work exactly the same as the
     rest.
 
-    2012-03-30 I will consider re-writing it so that it is consistent. (KD)
+    2012-03-30 I will consider re-writing it so that it is consistent. (dailykm)
     
     """
     
@@ -245,7 +250,7 @@ def run_collect_rnaseq_metrics(input, output, sample):
     is based off of the Galaxy wrapper for Picard, and doesn't work exactly the same as the
     rest.
 
-    2012-03-30 I will consider re-writing it so that it is consistent. (KD))
+    2012-03-30 I will consider re-writing it so that it is consistent. (dailykm)
 
     """
     
@@ -282,7 +287,7 @@ def run_collect_rnaseq_metrics(input, output, sample):
 
 @merge(run_collect_rnaseq_metrics, os.path.join(config["picard_params"]["output_dir"], "CollectRNASeqMetrics.tsv"))
 def run_merge_rnaseq_metrics(input_files, summary_file):
-    """Merge the outputs of collectrnaseqmetrics into one file.
+    """Merge the outputs of collectrnaseqmetrics into one tab-separated file.
 
     """
 
@@ -298,12 +303,66 @@ def run_merge_rnaseq_metrics(input_files, summary_file):
         dw.writeheader()
         dw.writerows(metrics)
 
-job_list_runfast = [run_setup_dir, run_mk_output_dir, run_fastqc]
-job_list = [run_setup_dir, run_mk_output_dir, run_fastqc, run_rum, run_sort_sam, run_collect_rnaseq_metrics, run_merge_rnaseq_metrics]
+job_list_runfast = [run_mk_output_dir, run_fastqc]
+job_list_rum = [run_rum]
+job_list_rest = [run_sort_sam, run_collect_rnaseq_metrics, run_merge_rnaseq_metrics]
+
+def run_it():
+    """Run the pipeline.
+    
+    Running in three stages to change number of concurrent processes.
+    
+    1. Run the FastQC quality control, which can run on many machines at once.
+    2. Run RUM alignment, which can only run on the large memory machine. It would seem that PBS would be smart enough to set the available memory so that concurrent jobs wouldn't happen?
+    3. Run CollectRNASeqMetrics etc, which are memory intensive but not as much as RUM.
+    
+    """
+
+    pipeline_run(job_list_runfast, multiprocess=20, logger=logger)
+    pipeline_run(job_list_rum, multiprocess=1, logger=logger)
+    pipeline_run(job_list_rest, multiprocess=2, logger=logger)
+
+def _keep_alive():
+    """Do something easy so that any task-killing program thinks that I am still alive!
+
+    """
+
+    for x in xrange(10000):
+        foo = max(y for y in xrange(1000))
+    
+    time.sleep(10)
+
+## In order to fool any task-killing software, we'll run the pipeline in one thread (that may be dormant for a while)
+## and some simple keep-alive task in another.
+import multiprocessing
 
 
 if opts.print_only:
-    pipeline_printout(sys.stdout, job_list, verbose=3)
+        pipeline_printout(sys.stdout, job_list, verbose=3)
 else:
-    pipeline_run(job_list_runfast, multiprocess=20, logger=logger)
-    pipeline_run(job_list, multiprocess=2, logger=logger)
+    print "Starting the main program"
+    thread = multiprocessing.Process(target=run_it)
+
+    print "Launching Pipeline"
+    thread.start()
+    print "Pipeline has been launched"
+    
+    # is_alive() is False when the thread ends.
+    while thread.is_alive():
+        
+        # Here you would have the code to make the app
+        # look "alive", a progress bar, or maybe just
+        # keep on working as usual.
+        
+        _keep_alive()
+
+        # print "The pipeline is still running"
+        # sys.stdout.flush()
+
+        # Wait a little bit, or until the thread ends,
+        # whatever's shorter.
+        thread.join(0.3)
+
+    print "Pipeline done!"
+
+# run_it()
