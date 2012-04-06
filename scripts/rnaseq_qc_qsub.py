@@ -287,7 +287,7 @@ def run_collect_rnaseq_metrics(input, output, sample):
 
 @merge(run_collect_rnaseq_metrics, os.path.join(config["picard_params"]["output_dir"], "CollectRNASeqMetrics.tsv"))
 def run_merge_rnaseq_metrics(input_files, summary_file):
-    """Merge the outputs of collectrnaseqmetrics into one file.
+    """Merge the outputs of collectrnaseqmetrics into one tab-separated file.
 
     """
 
@@ -308,6 +308,16 @@ job_list_rum = [run_rum]
 job_list_rest = [run_sort_sam, run_collect_rnaseq_metrics, run_merge_rnaseq_metrics]
 
 def run_it():
+    """Run the pipeline.
+    
+    Running in three stages to change number of concurrent processes.
+    
+    1. Run the FastQC quality control, which can run on many machines at once.
+    2. Run RUM alignment, which can only run on the large memory machine. It would seem that PBS would be smart enough to set the available memory so that concurrent jobs wouldn't happen?
+    3. Run CollectRNASeqMetrics etc, which are memory intensive but not as much as RUM.
+    
+    """
+
     pipeline_run(job_list_runfast, multiprocess=20, logger=logger)
     pipeline_run(job_list_rum, multiprocess=1, logger=logger)
     pipeline_run(job_list_rest, multiprocess=2, logger=logger)
