@@ -18,7 +18,7 @@ def main():
 
     # The users table already exists, so no need to redefine it. Just
     # load it from the database using the "autoload" feature.
-    gencode_table = Table('wgEncodeGencodeBasicV7', metadata, autoload=True)
+    gencode_table = Table('wgEncodeGencodeBasicV10', metadata, autoload=True)
 
     s = select([gencode_table.c.name, gencode_table.c.name2, gencode_table.c.chrom,
                 gencode_table.c.strand, gencode_table.c.txStart, gencode_table.c.txEnd,
@@ -27,7 +27,7 @@ def main():
     
     rs = s.execute()
     
-    of = file("/tmp/hg19_wgEncodeGencodeBasicV7_20120222.refFlat", "w")
+    of = file("/tmp/hg19_wgEncodeGencodeBasicV10_20120328.refFlat", "w")
     wr = csv.writer(of, delimiter="\t")
 
     try:

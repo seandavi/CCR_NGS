@@ -130,35 +130,57 @@ class PicardBase():
         except Exception, e:
             stop_err('Read Large Exception : %s' % str(e))   
         return s
-    
-    def runCL(self, cl=None, output_dir=None):
-        """ construct and run a command line
-        we have galaxy's temp path as opt.temp_dir so don't really need isolation
-        sometimes stdout is needed as the output - ugly hacks to deal with potentially vast artifacts
+
+    def constructCL(self, cl=None, output_dir=None):
+        """Constrct the command line
+
         """
+
         assert cl <> None, 'PicardBase runCL needs a command line as cl'
+
         if output_dir == None:
             output_dir = self.opts.outdir
         if type(cl) == type([]):
             cl = ' '.join(cl)
-        fd,templog = tempfile.mkstemp(dir=output_dir,suffix='rgtempRun.txt')
-        tlf = open(templog,'wb')
-        fd,temperr = tempfile.mkstemp(dir=output_dir,suffix='rgtempErr.txt')
-        tef = open(temperr,'wb')
-        process = subprocess.Popen(cl, shell=True, stderr=tef, stdout=tlf, cwd=output_dir)
-        rval = process.wait()
-        tlf.close()
-        tef.close()
-        stderrs = self.readLarge(temperr)
-        stdouts = self.readLarge(templog)        
+
+        return cl
+    
+    def runCL(self, cl=None, output_dir=None):
+        """Run a command line.
+        we have galaxy's temp path as opt.temp_dir so don't really need isolation
+        sometimes stdout is needed as the output - ugly hacks to deal with potentially vast artifacts
+
+        """
+
+        # stdout and stderr redirected to these
+        # fd,templog = tempfile.mkstemp(dir=output_dir,suffix='rgtempRun.txt')
+        # tlf = open(templog,'wb')
+        # fd,temperr = tempfile.mkstemp(dir=output_dir,suffix='rgtempErr.txt')
+        # tef = open(temperr,'wb')
+        # process = subprocess.Popen(cl, shell=True, stderr=tlf, stdout=tef, cwd=output_dir)
+        # rval = process.wait()
+        # tlf.close()
+        # tef.close()
+        # stderrs = self.readLarge(temperr)
+        # stdouts = self.readLarge(templog)        
+
+        cl = self.constructCL(cl=cl, output_dir=output_dir)
+
+        logger.debug("cl = %s" % cl)
+        
+        process = subprocess.Popen(cl, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=output_dir)
+        stdouts, stderrs = process.communicate()
+        rval = process.returncode
+
         if rval > 0:
             s = '## executing %s returned status %d and stderr: \n%s\n' % (cl,rval,stderrs)
             stdouts = '%s\n%s' % (stdouts,stderrs)
         else:
             s = '## executing %s returned status %d and nothing on stderr\n' % (cl,rval)
-        logging.info(s)
-        os.unlink(templog) # always
-        os.unlink(temperr) # always
+
+        # logging.info(s)
+        # os.unlink(templog) # always
+        # os.unlink(temperr) # always
         return s, stdouts, rval  # sometimes s is an output
     
     def runPic(self, jar, cl):
@@ -393,20 +415,21 @@ class PicardBase():
         parser.add_argument('-n', '--title', default="Pick a Picard Tool", type=str)
         parser.add_argument('-t', '--htmlout', default=None)
         parser.add_argument('-d', '--outdir', default=None)
-        parser.add_argument('-x', '--maxjheap', default='4g')
+        parser.add_argument('-x', '--maxjheap', default='2g')
         parser.add_argument('-b', '--bisulphite', default='false')
-        parser.add_argument('-s', '--sortorder', default='query')     
+        parser.add_argument('--sort_order', dest='sort_order', help='Sort order', default="coordinate", choices=["unsorted", "queryname", "coordinate"])
         parser.add_argument('--tmpdir', default='/tmp')
         parser.add_argument('-j', '--jar', default='')    
         # parser.add_argument('--picard-cmd', default=None)
 
         # Many tools
-        parser.add_argument('--output-format', dest='output_format', help='Output format')
-        parser.add_argument('--bai-file', dest='bai_file', help='The path to the index file for the input bam file')
+        parser.add_argument('--output_format', dest='output_format', help='Output format', default="sam", choices=["sam", ""])
+        parser.add_argument('--bai_file', dest='bai_file', help='The path to the index file for the input bam file')
         parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
         parser.add_argument('--assumesorted', default='True')
         parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
         parser.add_argument('--ref_file', dest='ref_file', help='Fasta to use as reference', default=None)
+        parser.add_argument('--ref_flat', dest='ref_flat', help='Ref flat to use as reference', default=None)
 
         # Need subparsers for the various commands
         subparsers = parser.add_subparsers(help="Picard sub-command help", dest='subparser_name')
@@ -424,19 +447,32 @@ class PicardBase():
         markdupparser.add_argument('--optdupdist', default="100", help='Maximum pixels between two identical sequences in order to consider them optical duplicates.')
         markdupparser.set_defaults(func=mark_duplicates)
 
+        # SortSam
+        sortsamparser = subparsers.add_parser("SortSam", help="SortSam help")
+        sortsamparser.set_defaults(func=sort_sam)
+
         # CollectRnaSeqMetrics
         collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
         collectrnaseqmetricsparser.add_argument('--ribosomal_intervals', help='Location of ribosomal sequences in genome.', default=None)
+        collectrnaseqmetricsparser.add_argument('--strand_specificity', help='Strand specificity.', default="NONE", choices=["NONE", "FIRST_READ_TRANSCRIPTION_STRAND", "SECOND_READ_TRANSCRIPTION_STRAND"])
         collectrnaseqmetricsparser.add_argument('--minimum_length', type=int, help='Minimum length [default: %(default)s]', default=500)
         collectrnaseqmetricsparser.add_argument('--chart_output', help='Output of PDF file', default=None)
-        collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None)
-        collectrnaseqmetricsparser.add_argument('--rrna_fragment_precentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
+        collectrnaseqmetricsparser.add_argument('--ignore_sequence', help='Ignore this sequence', default=None, type=str)
+        collectrnaseqmetricsparser.add_argument('--rrna_fragment_percentage', type=float, help='rRNA fragment precentage. [default: %(default)s]', default=0.8)
         collectrnaseqmetricsparser.add_argument('--metric_accumulation_level', type=str, help='The level(s) at which to accumulate metrics. [default: %(default)s]',
                                                 choices=["ALL_READS", "SAMPLE", "LIBRARY", "READ_GROUP"], default="SAMPLE")
         collectrnaseqmetricsparser.add_argument('--stop_after', type=int, help='Stop after N reads [default: %(default)s]', default=0)
         collectrnaseqmetricsparser.set_defaults(func=collect_rnaseq_metrics)
 
         return parser
+
+    def set_options(self, args):
+        """Use args from argparse.parse_args to populate the class.
+
+        """
+
+        self.__init__(opts=args)
+
 
 def setup(args):
     """Do things that all functions may require.
@@ -515,6 +551,21 @@ def mark_duplicates(args, pic, cl):
     args.stdouts, args.rval = pic.runPic(args.jar, cl)
     return args
 
+@setup_and_cleanup
+def sort_sam(args, pic, cl):
+
+    # input
+    cl.append('INPUT=%s' % args.input)
+
+    # outputs
+    cl.append('OUTPUT=%s' % args.output) 
+
+    # sort order
+    cl.append('SORT_ORDER=%s' % args.sort_order) 
+
+    args.stdouts, args.rval = pic.runPic(args.jar, cl)
+    return args
+    
     # cleanup(args, pic, rval, stdouts)
 
 # @setup_and_cleanup
@@ -576,32 +627,32 @@ def collect_rnaseq_metrics(args, pic, cl):
     cl.append('REFERENCE_SEQUENCE=%s' % (args.ref_file))
 
     # locations of rRNA seqs in genome in interval_list format.
-    cl.append('RIBOSOMAL_INTERVALS=%s' % args.ribosomal_intervals)
+    if args.ribosomal_intervals:
+        cl.append('RIBOSOMAL_INTERVALS=%s' % args.ribosomal_intervals)
+        cl.append('RRNA_FRAGMENT_PERCENTAGE=%d' % args.rrna_fragment_percentage)
 
     cl.append('MINIMUM_LENGTH=%i' % args.minimum_length)
-    cl.append('CHART_OUTPUT=%s' % args.chart_output)
-    cl.append('IGNORE_SEQUENCE=%s' % args.ignore_sequence)
 
-    cl.append('RRNA_FRAGMENT_PERCENTAGE=%d' % args.rrna_fragment_percentage)
+    if args.chart_output:
+        cl.append('CHART_OUTPUT=%s' % args.chart_output)
+
+    if args.ignore_sequence:
+        cl.append('IGNORE_SEQUENCE=%s' % args.ignore_sequence)
+
     cl.append('METRIC_ACCUMULATION_LEVEL=%s' % args.metric_accumulation_level)
 
     cl.append('ASSUME_SORTED=%s' % (args.assumesorted.lower()))
 
     cl.append('STOP_AFTER=%i' % (args.stop_after))
-    
+
+    cl.append('STRAND_SPECIFICITY=%s' % (args.strand_specificity))
+
     # outputs
     cl.append('OUTPUT=%s' % args.output) 
 
     args.stdouts, args.rval = pic.runPic(args.jar, cl)
     return args
 
-
-    def set_options(self, args):
-        """Use args from argparse.parse_args to populate the class.
-
-        """
-
-        self.__init__(opts=args)
 
         
     
@@ -854,7 +905,7 @@ def __main__():
   #   elif pic.picname == 'FixMateInformation':
   #       cl.append('I=%s' % opts.input)
   #       cl.append('O=%s' % tempout)
-  #       cl.append('SORT_ORDER=%s' % opts.sortorder)
+  #       cl.append('SORT_ORDER=%s' % opts.sort_order)
   #       stdouts,rval = pic.runPic(opts.jar,cl)
   #       haveTempout = True
         

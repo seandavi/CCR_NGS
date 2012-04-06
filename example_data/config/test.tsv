@@ -1,3 +1,3 @@
-sample	filename
-s_1_1	/var/preserve/git/CCR_NGS/example_data/fastq/s_1_1.fastq.gz
-s_1_2	/var/preserve/git/CCR_NGS/example_data/fastq/s_1_2.fastq.gz
+source	samplename	sample1	filename1	sample2	filename2
+RNAseq	s_1	s_1_1	s_1_1.fastq	s_1_2	s_1_2.fastq
+RNAseq	s_2	s_2_1	s_2_1.fastq	s_2_2	s_2_2.fastq

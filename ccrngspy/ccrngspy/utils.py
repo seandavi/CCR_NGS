@@ -1,19 +1,60 @@
 import subprocess
 import shlex
 import logging
+import tempfile
+import time
 
 def safe_run(cmd, shell=False):
-    res = None
+    proc = None
 
     if (isinstance(cmd, list)):
-        res = subprocess.call(cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         if shell:
-            res = subprocess.call(cmd, shell=True)
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
-            res = subprocess.call(shlex.split(cmd))
+            proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    so, se = proc.communicate()
+
+    return (so, se)
+
+# Could have these in the header too
+# #PBS -N %(jobname)s
+# #PBS -k oe
+
+_script_header = """
+#!/bin/bash
+"""
+
+def safe_qsub_run(cmd, jobname, script_header=_script_header, nodes=1, params="", stdout=None, stderr=None, shell=False):
+    """Run a command via qsub in blocking mode so that the command waits to exit.
+
+    Requires a header string and a job name.
+   
+    """
     
-    return(res)
+    scriptfile = tempfile.NamedTemporaryFile()
+    scriptfile.write("%(header)s\n%(command)s\n" % dict(header=script_header, command=cmd))
+    scriptfile.file.flush()
+
+    qsub_cmd = "qsub -N %(jobname)s -l nodes=%(nodes)s -W block=true %(params)s" % dict(jobname=jobname,
+                                                                                        nodes=nodes,
+                                                                                        params=params)
+
+    if stdout:
+        qsub_cmd += " -o %s" % stdout
+
+    if stderr:
+        qsub_cmd += " -e %s" % stderr
+    
+    qsub_cmd = "%(cmd)s %(script)s" % dict(cmd=qsub_cmd, script=scriptfile.name)
+
+    proc = subprocess.Popen(qsub_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    so, se = proc.communicate()
+    jobid = so.rstrip()
+    scriptfile.close()
+
+    return jobid, se
 
 _LOGGING_LEVEL = {'debug': logging.DEBUG,
                   'info': logging.INFO,

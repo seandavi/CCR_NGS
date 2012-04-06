@@ -18,6 +18,11 @@ from ruffus import *
 import yaml
 
 from ccrngspy.tasks import FastQC
+from ccrngspy import utils
+
+from ccrngspy.pipeline import fastqc_helpers
+
+logger = utils.make_local_logger("FastQC logging", level="debug", color="green")
 
 parser = argparse.ArgumentParser(description="Run fastqc on files.")
 
@@ -45,18 +50,8 @@ with open(opts.sample_file, 'r') as samplefile:
     reader = csv.DictReader(samplefile, delimiter="\t")
     samples = list(reader)
 
-def make_fastqc_param_list(samples):
-    """Helper function to turn the sample file into a list of files.
 
-    Needs to be a list of [input, output, params]; for the fastqc,
-    the output is none, while the params are taken from the global opts variable
-    (and possibly from the YAML config file).
-    
-    """
-    
-    return map(lambda x: [x['filename'], None, None], samples)
-
-test_task_params = make_fastqc_param_list(samples)
+test_task_params = make_fastqc_param_list(samples=samples, config=config)
 
 #----------------------------------------------
 # begin tasks here
@@ -71,6 +66,9 @@ def run_fastqc(input, output, params=None):
     fastqc_task = FastQC.FastQC(input_files=[input], output_directory=config['fastqc_params']['output_dir'])
     fastqc_task.run_fastqc()
 
+    # post task, touch output file!
+    of = file(output, mode="w")
+    of.close()
 
 if opts.print_only:
     pipeline_printout(sys.stdout, [run_fastqc])
