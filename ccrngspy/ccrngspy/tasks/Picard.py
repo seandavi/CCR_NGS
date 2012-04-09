@@ -426,7 +426,7 @@ class PicardBase():
         parser.add_argument('--output_format', dest='output_format', help='Output format', default="sam", choices=["sam", ""])
         parser.add_argument('--bai_file', dest='bai_file', help='The path to the index file for the input bam file')
         parser.add_argument('--ref', dest='ref', help='Built-in reference with fasta and dict file', default=None)
-        parser.add_argument('--assumesorted', default='True')
+        parser.add_argument('--assumesorted', default='true')
         parser.add_argument('--readregex', default="[a-zA-Z0-9]+:[0-9]:([0-9]+):([0-9]+):([0-9]+).*")
         parser.add_argument('--ref_file', dest='ref_file', help='Fasta to use as reference', default=None)
         parser.add_argument('--ref_flat', dest='ref_flat', help='Ref flat to use as reference', default=None)
@@ -450,6 +450,13 @@ class PicardBase():
         # SortSam
         sortsamparser = subparsers.add_parser("SortSam", help="SortSam help")
         sortsamparser.set_defaults(func=sort_sam)
+
+        # FilterSam
+        filtersamparser = subparsers.add_parser("FilterSam", help="FilterSam help")
+        filtersamparser.add_argument('--include_aligned', default='false', choices=['true', 'false'])
+        filtersamparser.add_argument('--exclude_aligned', default='false', choices=['true', 'false'])
+        filtersamparser.add_argument('--write_reads_files', default='true', choices=['true', 'false'])
+        filtersamparser.set_defaults(func=filter_sam)
 
         # CollectRnaSeqMetrics
         collectrnaseqmetricsparser = subparsers.add_parser("CollectRnaSeqMetrics", help="CollectRNASeqMetrics help")
@@ -565,7 +572,37 @@ def sort_sam(args, pic, cl):
 
     args.stdouts, args.rval = pic.runPic(args.jar, cl)
     return args
+
+@setup_and_cleanup
+def filter_sam(args, pic, cl):
+
+    # input
+    cl.append('INPUT=%s' % args.input)
     
+    if args.include_aligned:
+        cl.append("INCLUDE_ALIGNED=%s" % args.include_aligned.lower())
+
+    if args.exclude_aligned:
+        cl.append("EXCLUDE_ALIGNED=%s" % args.exclude_aligned.lower())
+
+    if args.include_reads:
+        cl.append("INCLUDE_READS=%s" % args.include_reads.lower())
+
+    if args.exclude_reads:
+        cl.append("EXCLUDE_READS=%s" % args.exclude_reads.lower())
+
+    if args.write_reads_files:
+        cl.append("WRITE_READS_FILES=%s" % args.write_reads_files)
+
+    # sort order
+    cl.append('SORT_ORDER=%s' % args.sort_order) 
+
+    # outputs
+    cl.append('OUTPUT=%s' % args.output) 
+
+    args.stdouts, args.rval = pic.runPic(args.jar, cl)
+    return args
+
     # cleanup(args, pic, rval, stdouts)
 
 # @setup_and_cleanup
