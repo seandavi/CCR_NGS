@@ -24,26 +24,31 @@ class BwaAlignment(helix.jobs.Job):
                 'saiFile':fastqFiles[0]+'.sai'}
         if(len(fastqFiles)==1):
             cmdString = """#!/bin/bash
-            %(bwaExe)s aln -t %(threads)d %(bwaPrefix)s %(fastqFile)s ) %(saiFile)s 
-            %(bwaExe)s samse %(bwaPrefix)s %(saiFile)s %(fastqFile)s | %(samtoolsExe)s view -bS - | samtools sort -m 5000000000 - %(bamPrefix)s
+            %(bwaExe)s aln -q 2 -t %(threads)d %(bwaPrefix)s %(fastqFile)s > %(saiFile)s 
+            %(bwaExe)s samse -n 1 %(bwaPrefix)s %(saiFile)s %(fastqFile)s | %(samtoolsExe)s view -bS - | samtools sort -m 5000000000 - %(bamPrefix)s
             touch %(bamFile)s.finished
             """ % hash
             super(BwaAlignment,self).__init__(command=cmdString,
                                               inputs=fastqFiles,
-                                              outputs=[bamFile,bamFile+'.finished'])
+                                              outputs=[bamFile,bamFile+'.finished'],
+                                              nodes=self.nodes)
+                                              
         if(len(fastqFiles)==2):
             hash['saiFile2']=fastqFiles[1]+".sai"
             hash['fastqFile2']=fastqFiles[1]
             hash['threads']=int(hash['threads']/2)
             cmdString = """#!/bin/bash
-            %(bwaExe)s aln -t %(threads)d %(bwaPrefix)s %(fastqFile)s ) %(saiFile)s &
-            %(bwaExe)s aln -t %(threads)d %(bwaPrefix)s %(fastqFile2)s ) %(saiFile2)s &
+            %(bwaExe)s aln -q 2 -t %(threads)d %(bwaPrefix)s %(fastqFile)s > %(saiFile)s &
+            bg
+            %(bwaExe)s aln -q 2 -t %(threads)d %(bwaPrefix)s %(fastqFile2)s > %(saiFile2)s &
+            bg
             wait
-            %(bwaExe)s sampe %(bwaPrefix)s %(saiFile)s %(saiFile2)s %(fastqFile)s %(fastqFile2)s | %(samtoolsExe)s view -bS - | samtools sort -m 5000000000 - %(bamPrefix)s
+            %(bwaExe)s sampe -n 1 -N 1 %(bwaPrefix)s %(saiFile)s %(saiFile2)s %(fastqFile)s %(fastqFile2)s | %(samtoolsExe)s view -bS - | samtools sort -m 5000000000 - %(bamPrefix)s
             touch %(bamFile)s.finished
             """ % hash
             super(BwaAlignment,self).__init__(command=cmdString,
                                               inputs=fastqFiles,
+                                              nodes=self.nodes,
                                               outputs=[bamFile,bamFile+'.finished'])
 
 
@@ -63,11 +68,12 @@ class MergeBam(helix.jobs.Job):
                 'samtoolsExe':config['samtoolsExe'],
                 'inputs':" ".join(["INPUT=" + x for x in bamFiles])}
         cmdString = """#!/bin/bash
-        java --jar %(picardPrefix)s/MergeSamFiles.jar ASSUME_SORTED=True OUTPUT=%(outputBam)s %(inputs)s
+        java -jar %(picardPrefix)s/MergeSamFiles.jar ASSUME_SORTED=True OUTPUT=%(outputBam)s %(inputs)s
         %(samtoolsExe)s index %(outputBam)s """ % hash
         super(MergeBam,self).__init__(command=cmdString,
-                                          inputs=bamFiles,
-                                          outputs=outputs)
+                                      inputs=bamFiles,
+                                      nodes=self.nodes,
+                                      outputs=outputs)
 
 class MarkDuplicates(helix.jobs.Job):
     threads = 2
@@ -86,11 +92,11 @@ class MarkDuplicates(helix.jobs.Job):
                 'samtoolsExe':config['samtoolsExe'],
                 'inputs':bamFile}
         cmdString = """#!/bin/bash
-        java64 -Xmx4g --jar %(picardPrefix)s/MarkDuplicates.jar ASSUME_SORTED=True METRICS=%(metrics)s OUTPUT=%(outputBam)s INPUT=%(inputs)s
-        %(samtoolsExe)s index %(outputBam)s """ % hash
+        java64 -Xmx4g -jar %(picardPrefix)s/MarkDuplicates.jar ASSUME_SORTED=True METRICS_FILE=%(metrics)s OUTPUT=%(outputBam)s INPUT=%(inputs)s CREATE_INDEX=true""" % hash
         super(MarkDuplicates,self).__init__(command=cmdString,
-                                          inputs=bamFile,
-                                          outputs=outputs)
+                                            inputs=bamFile,
+                                            nodes=self.nodes,
+                                            outputs=outputs)
 
 
 class IndelRealign(helix.jobs.Job):
